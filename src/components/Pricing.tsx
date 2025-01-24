@@ -5,6 +5,12 @@ import SignUpForm from "./SignUpForm";
 
 const Pricing = () => {
   const [showSignUp, setShowSignUp] = useState(false);
+  const [selectedOption, setSelectedOption] = useState<string>("");
+
+  const handleOptionClick = (option: string) => {
+    setSelectedOption(option);
+    setShowSignUp(true);
+  };
 
   return (
     <>
@@ -29,7 +35,7 @@ const Pricing = () => {
                   <span>API key detection</span>
                 </li>
               </ul>
-              <Button className="w-full" onClick={() => setShowSignUp(true)}>Start Free</Button>
+              <Button className="w-full" onClick={() => handleOptionClick("Basic Free Scan")}>Start Free</Button>
             </div>
             <div className="bg-gray-800/50 p-8 rounded-xl border border-gray-700">
               <h3 className="text-xl font-semibold mb-2">One-Time Deep Scan</h3>
@@ -48,7 +54,7 @@ const Pricing = () => {
                   <span>Security recommendations</span>
                 </li>
               </ul>
-              <Button className="w-full" onClick={() => setShowSignUp(true)}>Purchase Scan</Button>
+              <Button className="w-full" onClick={() => handleOptionClick("One-Time Deep Scan $20")}>Purchase Scan</Button>
             </div>
             <div className="bg-gradient-to-br from-primary/20 to-primary/5 p-8 rounded-xl border border-primary/50">
               <div className="inline-block px-3 py-1 rounded-full bg-primary/20 text-primary text-sm mb-4">Popular</div>
@@ -68,7 +74,7 @@ const Pricing = () => {
                   <span>Continuous monitoring</span>
                 </li>
               </ul>
-              <Button className="w-full" onClick={() => setShowSignUp(true)}>Subscribe Now</Button>
+              <Button className="w-full" onClick={() => handleOptionClick("Weekly Monitoring $10/month")}>Subscribe Now</Button>
             </div>
             <div className="bg-gray-800/50 p-8 rounded-xl border border-gray-700">
               <h3 className="text-xl font-semibold mb-2">Pro Level</h3>
@@ -87,12 +93,16 @@ const Pricing = () => {
                   <span>Advanced analytics</span>
                 </li>
               </ul>
-              <Button className="w-full" onClick={() => setShowSignUp(true)}>Go Pro</Button>
+              <Button className="w-full" onClick={() => handleOptionClick("Pro Level $25/month")}>Go Pro</Button>
             </div>
           </div>
         </div>
       </section>
-      <SignUpForm open={showSignUp} onOpenChange={setShowSignUp} />
+      <SignUpForm 
+        open={showSignUp} 
+        onOpenChange={setShowSignUp} 
+        selectedOption={selectedOption}
+      />
     </>
   );
 };

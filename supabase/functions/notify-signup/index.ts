@@ -11,6 +11,7 @@ const corsHeaders = {
 interface EmailRequest {
   userEmail: string;
   repoUrl?: string;
+  pricingOption?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -20,8 +21,12 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { userEmail, repoUrl }: EmailRequest = await req.json();
-    console.log(`Sending notification for new signup: ${userEmail}${repoUrl ? ` with repo: ${repoUrl}` : ''}`);
+    const { userEmail, repoUrl, pricingOption }: EmailRequest = await req.json();
+    console.log(`Sending notification for new signup: ${userEmail}${repoUrl ? ` with repo: ${repoUrl}` : ''}${pricingOption ? ` and pricing option: ${pricingOption}` : ''}`);
+
+    const pricingSection = pricingOption ? `
+      <p><strong>Selected Plan:</strong> ${pricingOption}</p>
+    ` : '';
 
     const repoSection = repoUrl ? `
       <p><strong>Repository URL:</strong> ${repoUrl}</p>
@@ -41,6 +46,7 @@ const handler = async (req: Request): Promise<Response> => {
           <h2>New User Signup</h2>
           <p>A new user has signed up for CheckMyGitHub:</p>
           <p><strong>Email:</strong> ${userEmail}</p>
+          ${pricingSection}
           ${repoSection}
         `,
       }),

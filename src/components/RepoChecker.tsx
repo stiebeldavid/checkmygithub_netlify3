@@ -146,14 +146,18 @@ const RepoChecker = () => {
                   <li>
                     Grant read-only access to <a href="https://github.com/check-my-git-hub" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Check-My-Git-Hub</a>
                     {currentRepoUrl && (
-                      <a 
-                        href={getAccessSettingsUrl(currentRepoUrl)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="ml-2 text-primary hover:underline"
-                      >
-                        Go to access page of your repo
-                      </a>
+                      <ul className="list-disc ml-6 mt-1">
+                        <li>
+                          <a 
+                            href={getAccessSettingsUrl(currentRepoUrl)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline"
+                          >
+                            Click here to see your repo's access page
+                          </a>
+                        </li>
+                      </ul>
                     )}
                   </li>
                   <li>Make the repository public (not recommended)</li>

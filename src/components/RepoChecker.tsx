@@ -42,11 +42,17 @@ const RepoChecker = () => {
 
     // Send notification about URL scan attempt
     try {
-      await supabase.functions.invoke('notify-scan', {
+      const { error } = await supabase.functions.invoke('notify-scan', {
         body: { repoUrl }
       });
+      
+      if (error) {
+        console.error('Error sending scan notification:', error);
+        // Don't show error to user as this is not critical for the main functionality
+      }
     } catch (error) {
-      console.error('Error sending scan notification:', error);
+      console.error('Failed to send scan notification:', error);
+      // Don't show error to user as this is not critical for the main functionality
     }
 
     setLoading(true);

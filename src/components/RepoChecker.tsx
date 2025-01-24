@@ -16,11 +16,7 @@ const RepoChecker = () => {
   const [repoData, setRepoData] = useState<any>(null);
   const [notFoundOrPrivate, setNotFoundOrPrivate] = useState(false);
   const [currentRepoUrl, setCurrentRepoUrl] = useState("");
-  const signUpRef = useRef<HTMLDivElement>(null);
-
-  const scrollToSignUp = () => {
-    signUpRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const [showSignUp, setShowSignUp] = useState(false);
 
   const extractRepoInfo = (url: string) => {
     try {
@@ -183,7 +179,7 @@ const RepoChecker = () => {
                   <div className="mt-4 text-center px-4">
                     <Button
                       variant="outline"
-                      onClick={scrollToSignUp}
+                      onClick={() => setShowSignUp(true)}
                       className="text-primary hover:text-primary-foreground group whitespace-normal text-center w-full md:w-auto min-h-[auto] py-8"
                     >
                       <span className="flex items-center justify-center gap-2 flex-wrap px-2">
@@ -195,13 +191,17 @@ const RepoChecker = () => {
               )}
             </div>
 
-            <div ref={signUpRef} className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-              <SignUpForm currentRepoUrl={currentRepoUrl} />
+            <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
               <SecurityBestPractices />
             </div>
           </div>
         )}
       </div>
+      <SignUpForm 
+        currentRepoUrl={currentRepoUrl} 
+        open={showSignUp} 
+        onOpenChange={setShowSignUp}
+      />
     </div>
   );
 };

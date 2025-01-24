@@ -1,4 +1,5 @@
-import { Shield } from "lucide-react";
+import { Shield, Code, Scale, Clock, AlertCircle } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 
 interface RepoStatsProps {
   repoData: {
@@ -7,6 +8,13 @@ interface RepoStatsProps {
     stars: number;
     forks: number;
     description: string;
+    language?: string;
+    updated_at?: string;
+    open_issues?: number;
+    license?: {
+      name: string;
+    };
+    size?: number;
   } | null;
 }
 
@@ -25,9 +33,41 @@ const RepoStats = ({ repoData }: RepoStatsProps) => {
         </span>
       </div>
       
-      <p className="text-gray-400 mb-4">{repoData.description}</p>
+      <p className="text-gray-400 mb-6">{repoData.description}</p>
       
-      <div className="flex gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        {repoData.language && (
+          <div className="flex items-center gap-2">
+            <Code className="w-4 h-4 text-primary" />
+            <span className="text-gray-300">{repoData.language}</span>
+          </div>
+        )}
+        
+        {repoData.license && (
+          <div className="flex items-center gap-2">
+            <Scale className="w-4 h-4 text-primary" />
+            <span className="text-gray-300">{repoData.license.name}</span>
+          </div>
+        )}
+        
+        {repoData.updated_at && (
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 text-primary" />
+            <span className="text-gray-300">
+              Updated {formatDistanceToNow(new Date(repoData.updated_at))} ago
+            </span>
+          </div>
+        )}
+        
+        {repoData.open_issues !== undefined && (
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-primary" />
+            <span className="text-gray-300">{repoData.open_issues} open issues</span>
+          </div>
+        )}
+      </div>
+      
+      <div className="flex flex-wrap gap-4 border-t border-gray-700 pt-4">
         <div className="flex items-center gap-1">
           <span className="text-yellow-400">★</span>
           <span>{repoData.stars}</span>
@@ -38,6 +78,13 @@ const RepoStats = ({ repoData }: RepoStatsProps) => {
           </svg>
           <span>{repoData.forks}</span>
         </div>
+        {repoData.size && (
+          <div className="flex items-center gap-1">
+            <span className="text-gray-400">
+              {(repoData.size / 1024).toFixed(1)} MB
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

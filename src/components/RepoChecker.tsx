@@ -77,6 +77,11 @@ const RepoChecker = () => {
         stars: data.stargazers_count,
         forks: data.forks_count,
         description: data.description,
+        language: data.language,
+        updated_at: data.updated_at,
+        open_issues: data.open_issues_count,
+        license: data.license,
+        size: data.size,
       });
     } catch (error) {
       console.error("Error scanning repository:", error);

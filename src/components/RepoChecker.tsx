@@ -14,33 +14,44 @@ const RepoChecker = () => {
   const [repoData, setRepoData] = useState<any>(null);
 
   const extractRepoInfo = (url: string) => {
-    const match = url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
-    return match ? { owner: match[1], repo: match[2] } : null;
+    try {
+      const match = url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+      if (!match) return null;
+      
+      // Clean up the repo name by removing any trailing slashes or .git
+      const repoName = match[2].replace(/\.git\/?$/, '').replace(/\/$/, '');
+      return { owner: match[1], repo: repoName };
+    } catch (error) {
+      return null;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Basic URL validation
-    const githubRegex = /^https:\/\/github\.com\/[\w-]+\/[\w-]+$/;
+    const githubRegex = /^https:\/\/github\.com\/[\w-]+\/[\w.-]+\/?$/;
     if (!githubRegex.test(repoUrl)) {
       toast.error("Please enter a valid GitHub repository URL");
       return;
     }
 
     setLoading(true);
+    setRepoData(null);
 
     try {
       const repoInfo = extractRepoInfo(repoUrl);
       if (!repoInfo) {
-        throw new Error("Invalid repository URL");
+        toast.error("Could not parse repository URL. Please check the format.");
+        return;
       }
 
-      const { data: credentials, error } = await supabase.functions.invoke('get-github-secret');
+      const { data: credentials, error: credentialsError } = await supabase.functions.invoke('get-github-secret');
       
-      if (error || !credentials) {
-        console.error("Error fetching GitHub credentials:", error);
-        throw new Error("Failed to fetch GitHub credentials");
+      if (credentialsError || !credentials) {
+        console.error("Error fetching GitHub credentials:", credentialsError);
+        toast.error("Failed to authenticate with GitHub");
+        return;
       }
 
       const response = await fetch(`https://api.github.com/repos/${repoInfo.owner}/${repoInfo.repo}`, {
@@ -50,7 +61,11 @@ const RepoChecker = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to fetch repository data");
+        if (response.status === 404) {
+          toast.error("Repository not found. Please check the URL and make sure the repository exists.");
+          return;
+        }
+        throw new Error(`GitHub API error: ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -63,11 +78,13 @@ const RepoChecker = () => {
       });
     } catch (error) {
       console.error("Error scanning repository:", error);
-      toast.error("Error fetching repository data");
+      toast.error("Failed to fetch repository data. Please try again later.");
     } finally {
       setLoading(false);
     }
   };
+
+  // ... keep existing code (JSX for the component layout)
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">

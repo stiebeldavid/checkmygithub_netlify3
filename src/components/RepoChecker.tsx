@@ -144,7 +144,7 @@ const RepoChecker = () => {
                 <p className="mb-2">For a full security report, either:</p>
                 <ul className="list-disc ml-6 space-y-1">
                   <li>
-                    Grant read-only access to CheckMyGitHub
+                    Grant read-only access to <a href="https://github.com/check-my-git-hub" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Check-My-Git-Hub</a>
                     {currentRepoUrl && (
                       <a 
                         href={getAccessSettingsUrl(currentRepoUrl)}

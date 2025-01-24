@@ -10,6 +10,7 @@ const corsHeaders = {
 
 interface EmailRequest {
   userEmail: string;
+  repoUrl?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -19,8 +20,12 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { userEmail }: EmailRequest = await req.json();
-    console.log(`Sending notification for new signup: ${userEmail}`);
+    const { userEmail, repoUrl }: EmailRequest = await req.json();
+    console.log(`Sending notification for new signup: ${userEmail}${repoUrl ? ` with repo: ${repoUrl}` : ''}`);
+
+    const repoSection = repoUrl ? `
+      <p><strong>Repository URL:</strong> ${repoUrl}</p>
+    ` : '';
 
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -36,6 +41,7 @@ const handler = async (req: Request): Promise<Response> => {
           <h2>New User Signup</h2>
           <p>A new user has signed up for CheckMyGitHub:</p>
           <p><strong>Email:</strong> ${userEmail}</p>
+          ${repoSection}
         `,
       }),
     });

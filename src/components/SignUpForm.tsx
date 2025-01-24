@@ -5,7 +5,11 @@ import { toast } from "sonner";
 import { AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-const SignUpForm = () => {
+interface SignUpFormProps {
+  currentRepoUrl?: string;
+}
+
+const SignUpForm = ({ currentRepoUrl }: SignUpFormProps) => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -23,7 +27,10 @@ const SignUpForm = () => {
 
       // Send email notification
       const { error: notifyError } = await supabase.functions.invoke('notify-signup', {
-        body: { userEmail: email }
+        body: { 
+          userEmail: email,
+          repoUrl: currentRepoUrl 
+        }
       });
 
       if (notifyError) {

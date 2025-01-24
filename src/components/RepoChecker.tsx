@@ -205,7 +205,7 @@ const RepoChecker = () => {
             </div>
 
             <div ref={signUpRef} className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-              <SignUpForm />
+              <SignUpForm currentRepoUrl={repoUrl} />
               <FeatureCards />
             </div>
           </div>

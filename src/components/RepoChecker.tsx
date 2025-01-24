@@ -152,13 +152,13 @@ const RepoChecker = () => {
                 <p className="text-gray-300 mb-4">
                   This repository either doesn't exist or is private. 
                 </p>
-                <p className="text-gray-400">
-                  For a full security report, either:
-                  <ul className="list-disc ml-6 mt-2 space-y-1">
+                <div className="text-gray-400">
+                  <p className="mb-2">For a full security report, either:</p>
+                  <ul className="list-disc ml-6 space-y-1">
                     <li>Give access to check-my-git-hub</li>
                     <li>Make the repository public (not recommended)</li>
                   </ul>
-                </p>
+                </div>
               </div>
             )}
 

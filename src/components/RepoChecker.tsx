@@ -192,9 +192,9 @@ const RepoChecker = () => {
                     <Button
                       variant="outline"
                       onClick={scrollToSignUp}
-                      className="text-primary hover:text-primary-foreground group whitespace-normal text-center w-full md:w-auto min-h-[auto] py-6"
+                      className="text-primary hover:text-primary-foreground group whitespace-normal text-center w-full md:w-auto min-h-[auto] py-8"
                     >
-                      <span className="flex items-center justify-center gap-2 flex-wrap px-2">
+                      <span className="flex items-center justify-center gap-2 flex-wrap px-4">
                         <span>Sign up to have CheckMyGitHub check your repo automatically</span>
                         <ArrowDown className="w-4 h-4 group-hover:translate-y-1 transition-transform shrink-0" />
                       </span>

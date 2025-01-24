@@ -14,11 +14,21 @@ const SignUpForm = () => {
     setLoading(true);
     
     try {
+      // Save to Supabase
       const { error } = await supabase
         .from('Signups')
         .insert([{ email }]);
 
       if (error) throw error;
+
+      // Send email notification
+      const { error: notifyError } = await supabase.functions.invoke('notify-signup', {
+        body: { userEmail: email }
+      });
+
+      if (notifyError) {
+        console.error('Error sending notification:', notifyError);
+      }
 
       toast.success("Thanks for signing up! We'll be in touch soon.");
       setEmail("");

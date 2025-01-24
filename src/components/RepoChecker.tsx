@@ -188,14 +188,16 @@ const RepoChecker = () => {
                   <p className="text-gray-300">
                     This repository is public, which means anyone can access your code. Make sure you haven't committed any sensitive information like API keys or credentials.
                   </p>
-                  <div className="mt-4 text-center">
+                  <div className="mt-4 text-center px-4">
                     <Button
                       variant="outline"
                       onClick={scrollToSignUp}
-                      className="text-primary hover:text-primary-foreground group"
+                      className="text-primary hover:text-primary-foreground group whitespace-normal text-center w-full md:w-auto"
                     >
-                      Sign up to have CheckMyGitHub check your repo automatically
-                      <ArrowDown className="w-4 h-4 ml-2 group-hover:translate-y-1 transition-transform" />
+                      <span className="flex items-center justify-center gap-2">
+                        <span>Sign up to have CheckMyGitHub check your repo automatically</span>
+                        <ArrowDown className="w-4 h-4 group-hover:translate-y-1 transition-transform shrink-0" />
+                      </span>
                     </Button>
                   </div>
                 </div>

@@ -91,6 +91,26 @@ const RepoChecker = () => {
     }
   };
 
+  const FeatureCards = () => (
+    <div className="grid md:grid-cols-3 gap-8 w-full max-w-6xl mx-auto">
+      <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700">
+        <Shield className="w-12 h-12 text-primary mb-4" />
+        <h3 className="text-lg font-semibold mb-2">Vulnerability Detection</h3>
+        <p className="text-gray-400">Scan your AI-generated code for potential security risks and vulnerabilities</p>
+      </div>
+      <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700">
+        <Lock className="w-12 h-12 text-primary mb-4" />
+        <h3 className="text-lg font-semibold mb-2">API Key Protection</h3>
+        <p className="text-gray-400">Identify exposed API keys and secrets in your codebase</p>
+      </div>
+      <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700">
+        <CheckCircle className="w-12 h-12 text-primary mb-4" />
+        <h3 className="text-lg font-semibold mb-2">Best Practices</h3>
+        <p className="text-gray-400">Get actionable recommendations to improve your app's security</p>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
       <div className="max-w-7xl mx-auto px-4 py-12">
@@ -98,32 +118,12 @@ const RepoChecker = () => {
           <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-400 mb-4">
             AI App Security Scanner
           </h1>
-          <p className="text-xl text-gray-400 mb-8">
+          <p className="text-xl text-gray-400 mb-12">
             Protect your AI-built applications from vulnerabilities, exposed API keys, and security issues
           </p>
-          
-          {/* Feature Highlights */}
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
-            <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700">
-              <Shield className="w-12 h-12 text-primary mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Vulnerability Detection</h3>
-              <p className="text-gray-400">Scan your AI-generated code for potential security risks and vulnerabilities</p>
-            </div>
-            <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700">
-              <Lock className="w-12 h-12 text-primary mb-4" />
-              <h3 className="text-lg font-semibold mb-2">API Key Protection</h3>
-              <p className="text-gray-400">Identify exposed API keys and secrets in your codebase</p>
-            </div>
-            <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700">
-              <CheckCircle className="w-12 h-12 text-primary mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Best Practices</h3>
-              <p className="text-gray-400">Get actionable recommendations to improve your app's security</p>
-            </div>
-          </div>
-        </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="space-y-8">
+          {/* Centered Repository Input */}
+          <div className="max-w-2xl mx-auto mb-16">
             <form onSubmit={handleSubmit} className="flex gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -140,55 +140,63 @@ const RepoChecker = () => {
                 {loading ? <LoadingSpinner /> : "Scan Repository"}
               </Button>
             </form>
-
-            {loading && (
-              <div className="text-center py-12">
-                <LoadingSpinner />
-                <p className="mt-4 text-gray-400">Analyzing repository...</p>
-              </div>
-            )}
-
-            {notFoundOrPrivate && (
-              <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700">
-                <div className="flex items-center gap-2 text-yellow-400 mb-4">
-                  <Lock className="w-6 h-6" />
-                  <h3 className="text-lg font-semibold">Repository Not Accessible</h3>
-                </div>
-                <p className="text-gray-300 mb-4">
-                  This repository either doesn't exist or is private. 
-                </p>
-                <div className="text-gray-400">
-                  <p className="mb-2">For a full security report, either:</p>
-                  <ul className="list-disc ml-6 space-y-1">
-                    <li>Give access to check-my-git-hub</li>
-                    <li>Make the repository public (not recommended)</li>
-                  </ul>
-                </div>
-              </div>
-            )}
-
-            {repoData && (
-              <>
-                <RepoStats repoData={repoData} />
-                {repoData.visibility === 'public' && (
-                  <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mt-4">
-                    <div className="flex items-center gap-2 text-yellow-400 mb-2">
-                      <AlertTriangle className="w-5 h-5" />
-                      <h3 className="font-semibold">Security Warning</h3>
-                    </div>
-                    <p className="text-gray-300">
-                      This repository is public, which means anyone can access your code. Make sure you haven't committed any sensitive information like API keys or credentials.
-                    </p>
-                  </div>
-                )}
-              </>
-            )}
           </div>
 
-          <div className="md:border-l md:border-gray-700 md:pl-8">
-            <SignUpForm />
-          </div>
+          {/* Show Feature Cards only if no repo data is displayed */}
+          {!repoData && !loading && !notFoundOrPrivate && <FeatureCards />}
         </div>
+
+        {loading && (
+          <div className="text-center py-12">
+            <LoadingSpinner />
+            <p className="mt-4 text-gray-400">Analyzing repository...</p>
+          </div>
+        )}
+
+        {notFoundOrPrivate && (
+          <div className="max-w-2xl mx-auto mb-16">
+            <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700">
+              <div className="flex items-center gap-2 text-yellow-400 mb-4">
+                <Lock className="w-6 h-6" />
+                <h3 className="text-lg font-semibold">Repository Not Accessible</h3>
+              </div>
+              <p className="text-gray-300 mb-4">
+                This repository either doesn't exist or is private. 
+              </p>
+              <div className="text-gray-400">
+                <p className="mb-2">For a full security report, either:</p>
+                <ul className="list-disc ml-6 space-y-1">
+                  <li>Give access to check-my-git-hub</li>
+                  <li>Make the repository public (not recommended)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {repoData && (
+          <div className="space-y-16">
+            <div className="max-w-4xl mx-auto">
+              <RepoStats repoData={repoData} />
+              {repoData.visibility === 'public' && (
+                <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mt-4">
+                  <div className="flex items-center gap-2 text-yellow-400 mb-2">
+                    <AlertTriangle className="w-5 h-5" />
+                    <h3 className="font-semibold">Security Warning</h3>
+                  </div>
+                  <p className="text-gray-300">
+                    This repository is public, which means anyone can access your code. Make sure you haven't committed any sensitive information like API keys or credentials.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+              <SignUpForm />
+              <FeatureCards />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

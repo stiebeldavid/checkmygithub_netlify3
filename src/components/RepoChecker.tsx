@@ -1,18 +1,21 @@
 import { useState, useRef } from "react";
-import { Search, Shield, AlertTriangle, Lock, CheckCircle, ArrowDown, Key, Code, GitBranch, Info, DollarSign, Zap } from "lucide-react";
+import { Lock, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import LoadingSpinner from "./LoadingSpinner";
 import RepoStats from "./RepoStats";
 import SignUpForm from "./SignUpForm";
+import RepoForm from "./RepoForm";
+import SecurityBestPractices from "./SecurityBestPractices";
+import HowItWorks from "./HowItWorks";
+import Pricing from "./Pricing";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 const RepoChecker = () => {
-  const [repoUrl, setRepoUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [repoData, setRepoData] = useState<any>(null);
   const [notFoundOrPrivate, setNotFoundOrPrivate] = useState(false);
+  const [currentRepoUrl, setCurrentRepoUrl] = useState("");
   const signUpRef = useRef<HTMLDivElement>(null);
 
   const scrollToSignUp = () => {
@@ -31,33 +34,11 @@ const RepoChecker = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const githubRegex = /^https:\/\/github\.com\/[\w-]+\/[\w.-]+\/?$/;
-    if (!githubRegex.test(repoUrl)) {
-      toast.error("Please enter a valid GitHub repository URL");
-      return;
-    }
-
-    // Send notification about URL scan attempt
-    try {
-      const { error } = await supabase.functions.invoke('notify-scan', {
-        body: { repoUrl }
-      });
-      
-      if (error) {
-        console.error('Error sending scan notification:', error);
-        // Don't show error to user as this is not critical for the main functionality
-      }
-    } catch (error) {
-      console.error('Failed to send scan notification:', error);
-      // Don't show error to user as this is not critical for the main functionality
-    }
-
+  const handleSubmit = async (repoUrl: string) => {
     setLoading(true);
     setRepoData(null);
     setNotFoundOrPrivate(false);
+    setCurrentRepoUrl(repoUrl);
 
     try {
       const repoInfo = extractRepoInfo(repoUrl);
@@ -116,193 +97,29 @@ const RepoChecker = () => {
     return `https://github.com/${owner}/${repo.replace(/\.git\/?$/, '')}/settings/access`;
   };
 
-  const SecurityBestPractices = () => (
-    <section className="py-16 bg-gray-900/50">
-      <div className="max-w-6xl mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-12">Security Best Practices</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-xl border border-gray-700 hover:border-primary/50 transition-all">
-            <Shield className="w-12 h-12 text-primary mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Access Control</h3>
-            <p className="text-gray-400">Never share full repository access. Use read-only permissions for security tools.</p>
-          </div>
-          <div className="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-xl border border-gray-700 hover:border-primary/50 transition-all">
-            <Key className="w-12 h-12 text-primary mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Token Management</h3>
-            <p className="text-gray-400">Regularly review and rotate access tokens. Monitor for exposed credentials.</p>
-          </div>
-          <div className="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-xl border border-gray-700 hover:border-primary/50 transition-all">
-            <Lock className="w-12 h-12 text-primary mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Least Privilege</h3>
-            <p className="text-gray-400">Follow the principle of least privilege. Grant minimal necessary permissions.</p>
-          </div>
-          <div className="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-xl border border-gray-700 hover:border-primary/50 transition-all">
-            <AlertTriangle className="w-12 h-12 text-primary mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Regular Audits</h3>
-            <p className="text-gray-400">Monitor access logs regularly. Review security settings periodically.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-
-  const HowItWorks = () => (
-    <section className="py-16 bg-gray-800/30">
-      <div className="max-w-6xl mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="flex flex-col items-center text-center p-6">
-            <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4">
-              <Search className="w-8 h-8 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">1. Connect Repository</h3>
-            <p className="text-gray-400">Enter your GitHub repository URL and grant read-only access to CheckMyGitHub.</p>
-          </div>
-          <div className="flex flex-col items-center text-center p-6">
-            <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4">
-              <Zap className="w-8 h-8 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">2. Automated Scan</h3>
-            <p className="text-gray-400">Our AI-powered tools scan your codebase for security vulnerabilities and best practices.</p>
-          </div>
-          <div className="flex flex-col items-center text-center p-6">
-            <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4">
-              <CheckCircle className="w-8 h-8 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">3. Get Results</h3>
-            <p className="text-gray-400">Receive detailed reports and actionable recommendations to improve your code security.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-
-  const Pricing = () => (
-    <section className="py-16">
-      <div className="max-w-6xl mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-12">Simple, Transparent Pricing</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div className="bg-gray-800/50 p-8 rounded-xl border border-gray-700">
-            <h3 className="text-xl font-semibold mb-2">Basic Scan</h3>
-            <div className="text-3xl font-bold mb-4">Free</div>
-            <ul className="space-y-3 mb-6">
-              <li className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-primary" />
-                <span>Single repository scan</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-primary" />
-                <span>Basic security check</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-primary" />
-                <span>API key detection</span>
-              </li>
-            </ul>
-            <Button className="w-full">Start Free</Button>
-          </div>
-          <div className="bg-gray-800/50 p-8 rounded-xl border border-gray-700">
-            <h3 className="text-xl font-semibold mb-2">One-Time Deep Scan</h3>
-            <div className="text-3xl font-bold mb-4">$20</div>
-            <ul className="space-y-3 mb-6">
-              <li className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-primary" />
-                <span>Comprehensive scan</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-primary" />
-                <span>Detailed report</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-primary" />
-                <span>Security recommendations</span>
-              </li>
-            </ul>
-            <Button className="w-full">Purchase Scan</Button>
-          </div>
-          <div className="bg-gradient-to-br from-primary/20 to-primary/5 p-8 rounded-xl border border-primary/50">
-            <div className="inline-block px-3 py-1 rounded-full bg-primary/20 text-primary text-sm mb-4">Popular</div>
-            <h3 className="text-xl font-semibold mb-2">Weekly Monitoring</h3>
-            <div className="text-3xl font-bold mb-4">$10/month</div>
-            <ul className="space-y-3 mb-6">
-              <li className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-primary" />
-                <span>Weekly automated scans</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-primary" />
-                <span>Email notifications</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-primary" />
-                <span>Continuous monitoring</span>
-              </li>
-            </ul>
-            <Button className="w-full">Subscribe Now</Button>
-          </div>
-          <div className="bg-gray-800/50 p-8 rounded-xl border border-gray-700">
-            <h3 className="text-xl font-semibold mb-2">Pro Level</h3>
-            <div className="text-3xl font-bold mb-4">$25/month</div>
-            <ul className="space-y-3 mb-6">
-              <li className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-primary" />
-                <span>Up to 25 repositories</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-primary" />
-                <span>Priority support</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-primary" />
-                <span>Advanced analytics</span>
-              </li>
-            </ul>
-            <Button className="w-full">Go Pro</Button>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold mb-6">
-            Scan Your Repository
-            <span className="text-primary"> for Free</span>
-          </h1>
           <div className="max-w-3xl mx-auto space-y-6">
             <p className="text-2xl font-semibold text-gray-300 mb-4">
               Protect your API keys and ensure your AI-generated code follows security best practices.
             </p>
+            <h1 className="text-5xl font-bold mb-6">
+              Scan Your Repository
+              <span className="text-primary"> for Free</span>
+            </h1>
             <p className="text-xl text-gray-300">
               Built specifically for developers using AI tools like Lovable, Bolt, Create, v0, Replit, Cursor and more.
             </p>
           </div>
 
           <div className="max-w-2xl mx-auto mt-12 mb-16">
-            <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <Input
-                  type="url"
-                  placeholder="Enter your GitHub repository URL"
-                  value={repoUrl}
-                  onChange={(e) => setRepoUrl(e.target.value)}
-                  className="pl-10 bg-gray-800 text-white placeholder:text-gray-400 border-gray-700 w-full"
-                  required
-                />
-              </div>
-              <Button type="submit" disabled={loading} className="w-full md:w-auto">
-                {loading ? <LoadingSpinner /> : "Scan Now - It's Free"}
-              </Button>
-            </form>
+            <RepoForm onSubmit={handleSubmit} loading={loading} />
           </div>
 
           {!repoData && !loading && !notFoundOrPrivate && (
             <>
-              <FeatureCards />
               <SecurityBestPractices />
               <HowItWorks />
               <Pricing />
@@ -332,9 +149,9 @@ const RepoChecker = () => {
                 <ul className="list-disc ml-6 space-y-1">
                   <li>
                     Grant read-only access to CheckMyGitHub
-                    {repoUrl && (
+                    {currentRepoUrl && (
                       <a 
-                        href={getAccessSettingsUrl(repoUrl)}
+                        href={getAccessSettingsUrl(currentRepoUrl)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="ml-2 text-primary hover:underline"
@@ -371,7 +188,6 @@ const RepoChecker = () => {
                     >
                       <span className="flex items-center justify-center gap-2 flex-wrap px-2">
                         <span>Sign up to have CheckMyGitHub check your repo automatically</span>
-                        <ArrowDown className="w-4 h-4 group-hover:translate-y-1 transition-transform shrink-0" />
                       </span>
                     </Button>
                   </div>
@@ -380,8 +196,8 @@ const RepoChecker = () => {
             </div>
 
             <div ref={signUpRef} className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-              <SignUpForm currentRepoUrl={repoUrl} />
-              <FeatureCards />
+              <SignUpForm currentRepoUrl={currentRepoUrl} />
+              <SecurityBestPractices />
             </div>
           </div>
         )}

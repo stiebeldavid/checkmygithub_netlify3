@@ -12,6 +12,7 @@ const RepoChecker = () => {
   const [repoUrl, setRepoUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [repoData, setRepoData] = useState<any>(null);
+  const [notFoundOrPrivate, setNotFoundOrPrivate] = useState(false);
 
   const extractRepoInfo = (url: string) => {
     try {
@@ -38,6 +39,7 @@ const RepoChecker = () => {
 
     setLoading(true);
     setRepoData(null);
+    setNotFoundOrPrivate(false);
 
     try {
       const repoInfo = extractRepoInfo(repoUrl);
@@ -62,7 +64,7 @@ const RepoChecker = () => {
 
       if (!response.ok) {
         if (response.status === 404) {
-          toast.error("Repository not found. Please check the URL and make sure the repository exists.");
+          setNotFoundOrPrivate(true);
           return;
         }
         throw new Error(`GitHub API error: ${response.statusText}`);
@@ -83,8 +85,6 @@ const RepoChecker = () => {
       setLoading(false);
     }
   };
-
-  // ... keep existing code (JSX for the component layout)
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
@@ -140,6 +140,25 @@ const RepoChecker = () => {
               <div className="text-center py-12">
                 <LoadingSpinner />
                 <p className="mt-4 text-gray-400">Analyzing repository...</p>
+              </div>
+            )}
+
+            {notFoundOrPrivate && (
+              <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700">
+                <div className="flex items-center gap-2 text-yellow-400 mb-4">
+                  <Lock className="w-6 h-6" />
+                  <h3 className="text-lg font-semibold">Repository Not Accessible</h3>
+                </div>
+                <p className="text-gray-300 mb-4">
+                  This repository either doesn't exist or is private. 
+                </p>
+                <p className="text-gray-400">
+                  For a full security report, either:
+                  <ul className="list-disc ml-6 mt-2 space-y-1">
+                    <li>Give access to check-my-git-hub</li>
+                    <li>Make the repository public (not recommended)</li>
+                  </ul>
+                </p>
               </div>
             )}
 

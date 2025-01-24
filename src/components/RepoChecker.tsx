@@ -182,11 +182,11 @@ const RepoChecker = () => {
             <span className="text-primary"> for Free</span>
           </h1>
           <div className="max-w-3xl mx-auto space-y-6">
+            <p className="text-2xl font-semibold text-gray-300 mb-4">
+              Protect your API keys and ensure your AI-generated code follows security best practices.
+            </p>
             <p className="text-xl text-gray-300">
               Built specifically for developers using AI tools like Lovable, Bolt, Create, v0, Replit, Cursor and more.
-            </p>
-            <p className="text-gray-400">
-              Protect your API keys and ensure your AI-generated code follows security best practices.
             </p>
           </div>
 

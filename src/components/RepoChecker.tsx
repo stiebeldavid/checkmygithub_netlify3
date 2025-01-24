@@ -19,7 +19,6 @@ const RepoChecker = () => {
       const match = url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
       if (!match) return null;
       
-      // Clean up the repo name by removing any trailing slashes or .git
       const repoName = match[2].replace(/\.git\/?$/, '').replace(/\/$/, '');
       return { owner: match[1], repo: repoName };
     } catch (error) {
@@ -30,7 +29,6 @@ const RepoChecker = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Basic URL validation
     const githubRegex = /^https:\/\/github\.com\/[\w-]+\/[\w.-]+\/?$/;
     if (!githubRegex.test(repoUrl)) {
       toast.error("Please enter a valid GitHub repository URL");
@@ -116,13 +114,12 @@ const RepoChecker = () => {
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-400 mb-4">
-            AI App Security Scanner
+            CheckMyGitHub.com
           </h1>
           <p className="text-xl text-gray-400 mb-12">
             Protect your AI-built applications from vulnerabilities, exposed API keys, and security issues
           </p>
 
-          {/* Centered Repository Input */}
           <div className="max-w-2xl mx-auto mb-16">
             <form onSubmit={handleSubmit} className="flex gap-2">
               <div className="relative flex-1">
@@ -142,7 +139,6 @@ const RepoChecker = () => {
             </form>
           </div>
 
-          {/* Show Feature Cards only if no repo data is displayed */}
           {!repoData && !loading && !notFoundOrPrivate && <FeatureCards />}
         </div>
 

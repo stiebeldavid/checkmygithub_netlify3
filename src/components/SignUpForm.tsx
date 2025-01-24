@@ -3,21 +3,31 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { AlertCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const SignUpForm = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const { error } = await supabase
+        .from('Signups')
+        .insert([{ email }]);
+
+      if (error) throw error;
+
       toast.success("Thanks for signing up! We'll be in touch soon.");
       setEmail("");
+    } catch (error) {
+      console.error('Error saving signup:', error);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   const exampleIssues = [

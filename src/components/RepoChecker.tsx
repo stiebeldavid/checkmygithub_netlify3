@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Search, Shield, AlertTriangle, Lock, CheckCircle } from "lucide-react";
+import { useState, useRef } from "react";
+import { Search, Shield, AlertTriangle, Lock, CheckCircle, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import LoadingSpinner from "./LoadingSpinner";
@@ -13,6 +13,11 @@ const RepoChecker = () => {
   const [loading, setLoading] = useState(false);
   const [repoData, setRepoData] = useState<any>(null);
   const [notFoundOrPrivate, setNotFoundOrPrivate] = useState(false);
+  const signUpRef = useRef<HTMLDivElement>(null);
+
+  const scrollToSignUp = () => {
+    signUpRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const extractRepoInfo = (url: string) => {
     try {
@@ -183,11 +188,21 @@ const RepoChecker = () => {
                   <p className="text-gray-300">
                     This repository is public, which means anyone can access your code. Make sure you haven't committed any sensitive information like API keys or credentials.
                   </p>
+                  <div className="mt-4 text-center">
+                    <Button
+                      variant="outline"
+                      onClick={scrollToSignUp}
+                      className="text-primary hover:text-primary-foreground group"
+                    >
+                      Sign up to have CheckMyGitHub check your repo automatically
+                      <ArrowDown className="w-4 h-4 ml-2 group-hover:translate-y-1 transition-transform" />
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+            <div ref={signUpRef} className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
               <SignUpForm />
               <FeatureCards />
             </div>

@@ -8,16 +8,16 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
 
 interface SignUpFormProps {
   currentRepoUrl?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  selectedOption?: string;
 }
 
-const SignUpForm = ({ currentRepoUrl, open, onOpenChange }: SignUpFormProps) => {
+const SignUpForm = ({ currentRepoUrl, open, onOpenChange, selectedOption }: SignUpFormProps) => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -28,14 +28,19 @@ const SignUpForm = ({ currentRepoUrl, open, onOpenChange }: SignUpFormProps) => 
     try {
       const { error } = await supabase
         .from('Signups')
-        .insert([{ email, github_url: currentRepoUrl }]);
+        .insert([{ 
+          email, 
+          github_url: currentRepoUrl,
+          option_chosen: selectedOption || 'basic' 
+        }]);
 
       if (error) throw error;
 
       const { error: notifyError } = await supabase.functions.invoke('notify-signup', {
         body: { 
           userEmail: email,
-          repoUrl: currentRepoUrl 
+          repoUrl: currentRepoUrl,
+          pricingOption: selectedOption || 'basic'
         }
       });
 
@@ -66,14 +71,12 @@ const SignUpForm = ({ currentRepoUrl, open, onOpenChange }: SignUpFormProps) => 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Get the full security scan</DialogTitle>
+          <h2 className="text-lg font-semibold">
+            Sign up to claim 40% off the price once we go live!
+          </h2>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
-            <p className="text-sm text-gray-400">
-              Sign up to claim 40% off full security scan price once we go live.
-            </p>
-            
             <div className="space-y-2">
               <p className="text-sm font-medium text-gray-300">Example issues we detect:</p>
               <ul className="space-y-2">

@@ -109,6 +109,13 @@ const RepoChecker = () => {
     }
   };
 
+  const getAccessSettingsUrl = (repoUrl: string) => {
+    const match = repoUrl.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+    if (!match) return '';
+    const [, owner, repo] = match;
+    return `https://github.com/${owner}/${repo.replace(/\.git\/?$/, '')}/settings/access`;
+  };
+
   const FeatureCards = () => (
     <div className="grid md:grid-cols-3 gap-8 w-full max-w-6xl mx-auto">
       <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700">
@@ -230,7 +237,19 @@ const RepoChecker = () => {
               <div className="text-gray-400">
                 <p className="mb-2">For a full security report, either:</p>
                 <ul className="list-disc ml-6 space-y-1">
-                  <li>Grant read-only access to CheckMyGitHub</li>
+                  <li>
+                    Grant read-only access to CheckMyGitHub
+                    {repoUrl && (
+                      <a 
+                        href={getAccessSettingsUrl(repoUrl)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ml-2 text-primary hover:underline"
+                      >
+                        Go to access page of your repo
+                      </a>
+                    )}
+                  </li>
                   <li>Make the repository public (not recommended)</li>
                 </ul>
               </div>

@@ -35,7 +35,7 @@ const handler = async (req: Request): Promise<Response> => {
       },
       body: JSON.stringify({
         from: "CheckMyGitHub <onboarding@resend.dev>",
-        to: ["delivered@resend.dev"], // Replace this with your email
+        to: ["stiebeldavid@gmail.com"],
         subject: "New User Signup!",
         html: `
           <h2>New User Signup</h2>

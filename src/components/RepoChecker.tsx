@@ -121,7 +121,7 @@ const RepoChecker = () => {
           </p>
 
           <div className="max-w-2xl mx-auto mb-16">
-            <form onSubmit={handleSubmit} className="flex gap-2">
+            <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <Input
@@ -129,11 +129,11 @@ const RepoChecker = () => {
                   placeholder="Enter GitHub repository URL"
                   value={repoUrl}
                   onChange={(e) => setRepoUrl(e.target.value)}
-                  className="pl-10 bg-gray-800 text-white placeholder:text-gray-400 border-gray-700"
+                  className="pl-10 bg-gray-800 text-white placeholder:text-gray-400 border-gray-700 w-full"
                   required
                 />
               </div>
-              <Button type="submit" disabled={loading}>
+              <Button type="submit" disabled={loading} className="w-full md:w-auto">
                 {loading ? <LoadingSpinner /> : "Scan Repository"}
               </Button>
             </form>

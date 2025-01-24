@@ -57,7 +57,7 @@ const RepoChecker = () => {
               placeholder="Enter GitHub repository URL"
               value={repoUrl}
               onChange={(e) => setRepoUrl(e.target.value)}
-              className="pl-10"
+              className="pl-10 bg-gray-800 text-white placeholder:text-gray-400 border-gray-700"
               required
             />
           </div>

@@ -230,7 +230,7 @@ const RepoChecker = () => {
               <div className="text-gray-400">
                 <p className="mb-2">For a full security report, either:</p>
                 <ul className="list-disc ml-6 space-y-1">
-                  <li>Give access to check-my-git-hub</li>
+                  <li>Grant read-only access to CheckMyGitHub</li>
                   <li>Make the repository public (not recommended)</li>
                 </ul>
               </div>

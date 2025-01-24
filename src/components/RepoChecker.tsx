@@ -1,16 +1,22 @@
 import { useState } from "react";
-import { Search } from "lucide-react";
+import { Search, Shield, AlertTriangle, Lock, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import LoadingSpinner from "./LoadingSpinner";
 import RepoStats from "./RepoStats";
 import SignUpForm from "./SignUpForm";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const RepoChecker = () => {
   const [repoUrl, setRepoUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [repoData, setRepoData] = useState<any>(null);
+
+  const extractRepoInfo = (url: string) => {
+    const match = url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+    return match ? { owner: match[1], repo: match[2] } : null;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,29 +30,68 @@ const RepoChecker = () => {
 
     setLoading(true);
 
-    // Simulate API call with mock data
-    setTimeout(() => {
-      setRepoData({
-        name: repoUrl.split("/").pop(),
-        visibility: "public",
-        stars: 128,
-        forks: 23,
-        description: "A sample repository for demonstration purposes.",
+    try {
+      const repoInfo = extractRepoInfo(repoUrl);
+      if (!repoInfo) {
+        throw new Error("Invalid repository URL");
+      }
+
+      const { data: { secret: githubSecret } } = await supabase.functions.invoke('get-github-secret');
+      
+      const response = await fetch(`https://api.github.com/repos/${repoInfo.owner}/${repoInfo.repo}`, {
+        headers: {
+          Authorization: `Bearer ${githubSecret}`,
+        },
       });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch repository data");
+      }
+
+      const data = await response.json();
+      setRepoData({
+        name: data.name,
+        visibility: data.private ? "private" : "public",
+        stars: data.stargazers_count,
+        forks: data.forks_count,
+        description: data.description,
+      });
+    } catch (error) {
+      toast.error("Error fetching repository data");
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
+      <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-400">
-            Check My GitHub
+          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-400 mb-4">
+            AI App Security Scanner
           </h1>
-          <p className="text-xl text-gray-400">
-            Scan your repository for vulnerabilities, exposed API keys, and security issues
+          <p className="text-xl text-gray-400 mb-8">
+            Protect your AI-built applications from vulnerabilities, exposed API keys, and security issues
           </p>
+          
+          {/* New Feature Highlights */}
+          <div className="grid md:grid-cols-3 gap-8 mb-16">
+            <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700">
+              <Shield className="w-12 h-12 text-primary mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Vulnerability Detection</h3>
+              <p className="text-gray-400">Scan your AI-generated code for potential security risks and vulnerabilities</p>
+            </div>
+            <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700">
+              <Lock className="w-12 h-12 text-primary mb-4" />
+              <h3 className="text-lg font-semibold mb-2">API Key Protection</h3>
+              <p className="text-gray-400">Identify exposed API keys and secrets in your codebase</p>
+            </div>
+            <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700">
+              <CheckCircle className="w-12 h-12 text-primary mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Best Practices</h3>
+              <p className="text-gray-400">Get actionable recommendations to improve your app's security</p>
+            </div>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
@@ -76,7 +121,20 @@ const RepoChecker = () => {
             )}
 
             {repoData && (
-              <RepoStats repoData={repoData} />
+              <>
+                <RepoStats repoData={repoData} />
+                {repoData.visibility === 'public' && (
+                  <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mt-4">
+                    <div className="flex items-center gap-2 text-yellow-400 mb-2">
+                      <AlertTriangle className="w-5 h-5" />
+                      <h3 className="font-semibold">Security Warning</h3>
+                    </div>
+                    <p className="text-gray-300">
+                      This repository is public, which means anyone can access your code. Make sure you haven't committed any sensitive information like API keys or credentials.
+                    </p>
+                  </div>
+                )}
+              </>
             )}
           </div>
 

@@ -40,6 +40,15 @@ const RepoChecker = () => {
       return;
     }
 
+    // Send notification about URL scan attempt
+    try {
+      await supabase.functions.invoke('notify-scan', {
+        body: { repoUrl }
+      });
+    } catch (error) {
+      console.error('Error sending scan notification:', error);
+    }
+
     setLoading(true);
     setRepoData(null);
     setNotFoundOrPrivate(false);

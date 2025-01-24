@@ -83,7 +83,7 @@ const SignUpForm = ({ currentRepoUrl }: SignUpFormProps) => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="flex-1"
+          className="flex-1 text-black"
         />
         <Button type="submit" disabled={loading}>
           {loading ? "Signing up..." : "Sign Up"}

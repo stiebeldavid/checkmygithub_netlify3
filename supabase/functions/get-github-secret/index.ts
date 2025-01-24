@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   const githubSecret = Deno.env.get("GITHUB_CLIENT_SECRET");
-  const githubClientId = "Iv1.b7c2e2e2c2e2c2e2";
+  const githubClientId = "Ov23lilzhuwxnMiXDPq6";
   
   if (!githubSecret) {
     console.error("GitHub secret not configured");

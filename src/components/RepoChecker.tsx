@@ -36,11 +36,16 @@ const RepoChecker = () => {
         throw new Error("Invalid repository URL");
       }
 
-      const { data: { secret: githubSecret } } = await supabase.functions.invoke('get-github-secret');
+      const { data: credentials, error } = await supabase.functions.invoke('get-github-secret');
       
+      if (error || !credentials) {
+        console.error("Error fetching GitHub credentials:", error);
+        throw new Error("Failed to fetch GitHub credentials");
+      }
+
       const response = await fetch(`https://api.github.com/repos/${repoInfo.owner}/${repoInfo.repo}`, {
         headers: {
-          Authorization: `Bearer ${githubSecret}`,
+          Authorization: `Basic ${btoa(`${credentials.clientId}:${credentials.secret}`)}`,
         },
       });
 
@@ -57,6 +62,7 @@ const RepoChecker = () => {
         description: data.description,
       });
     } catch (error) {
+      console.error("Error scanning repository:", error);
       toast.error("Error fetching repository data");
     } finally {
       setLoading(false);
@@ -74,7 +80,7 @@ const RepoChecker = () => {
             Protect your AI-built applications from vulnerabilities, exposed API keys, and security issues
           </p>
           
-          {/* New Feature Highlights */}
+          {/* Feature Highlights */}
           <div className="grid md:grid-cols-3 gap-8 mb-16">
             <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700">
               <Shield className="w-12 h-12 text-primary mb-4" />

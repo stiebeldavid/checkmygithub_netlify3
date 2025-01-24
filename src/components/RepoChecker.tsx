@@ -39,8 +39,8 @@ const RepoChecker = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white p-8">
-      <div className="max-w-4xl mx-auto space-y-12">
-        <div className="text-center space-y-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-12">
           <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-400">
             Check My GitHub
           </h1>
@@ -49,36 +49,41 @@ const RepoChecker = () => {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <Input
-              type="url"
-              placeholder="Enter GitHub repository URL"
-              value={repoUrl}
-              onChange={(e) => setRepoUrl(e.target.value)}
-              className="pl-10 bg-gray-800 text-white placeholder:text-gray-400 border-gray-700"
-              required
-            />
-          </div>
-          <Button type="submit" disabled={loading}>
-            {loading ? <LoadingSpinner /> : "Scan Repository"}
-          </Button>
-        </form>
-
-        {loading && (
-          <div className="text-center py-12">
-            <LoadingSpinner />
-            <p className="mt-4 text-gray-400">Analyzing repository...</p>
-          </div>
-        )}
-
-        {repoData && (
+        <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-8">
-            <RepoStats repoData={repoData} />
+            <form onSubmit={handleSubmit} className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Input
+                  type="url"
+                  placeholder="Enter GitHub repository URL"
+                  value={repoUrl}
+                  onChange={(e) => setRepoUrl(e.target.value)}
+                  className="pl-10 bg-gray-800 text-white placeholder:text-gray-400 border-gray-700"
+                  required
+                />
+              </div>
+              <Button type="submit" disabled={loading}>
+                {loading ? <LoadingSpinner /> : "Scan Repository"}
+              </Button>
+            </form>
+
+            {loading && (
+              <div className="text-center py-12">
+                <LoadingSpinner />
+                <p className="mt-4 text-gray-400">Analyzing repository...</p>
+              </div>
+            )}
+
+            {repoData && (
+              <RepoStats repoData={repoData} />
+            )}
+          </div>
+
+          <div className="md:border-l md:border-gray-700 md:pl-8">
             <SignUpForm />
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

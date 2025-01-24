@@ -114,7 +114,7 @@ const RepoChecker = () => {
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-400 mb-4">
-            CheckMyGitHub.com
+            CheckMyGitHub
           </h1>
           <p className="text-xl text-gray-400 mb-12">
             Protect your AI-built applications from vulnerabilities, exposed API keys, and security issues

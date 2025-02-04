@@ -111,8 +111,18 @@ const RepoChecker = () => {
       // Use the production redirect URI
       const redirectUri = 'https://checkmygithub.com/oauth-callback.html';
       
+      // Extract repo info to request specific repo access
+      const repoInfo = extractRepoInfo(currentRepoUrl);
+      if (!repoInfo) {
+        toast.error("Could not parse repository URL. Please check the format.");
+        return;
+      }
+
+      // Request read-only access to the specific repository
+      const scope = `read:org repo:status repo:read public_repo read:repo_hook`;
+      
       const authWindow = window.open(
-        `https://github.com/login/oauth/authorize?client_id=${credentials.clientId}&redirect_uri=${redirectUri}&scope=repo`,
+        `https://github.com/login/oauth/authorize?client_id=${credentials.clientId}&redirect_uri=${redirectUri}&scope=${scope}`,
         'GitHub Authorization',
         `width=${width},height=${height},top=${top},left=${left}`
       );

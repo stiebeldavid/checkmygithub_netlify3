@@ -108,8 +108,11 @@ const RepoChecker = () => {
       const left = window.screen.width / 2 - width / 2;
       const top = window.screen.height / 2 - height / 2;
       
+      // Use the oauth-callback.html page as the redirect URI
+      const redirectUri = `${window.location.origin}/oauth-callback.html`;
+      
       const authWindow = window.open(
-        `https://github.com/login/oauth/authorize?client_id=${credentials.clientId}&redirect_uri=${window.location.origin}&scope=repo`,
+        `https://github.com/login/oauth/authorize?client_id=${credentials.clientId}&redirect_uri=${redirectUri}&scope=repo`,
         'GitHub Authorization',
         `width=${width},height=${height},top=${top},left=${left}`
       );

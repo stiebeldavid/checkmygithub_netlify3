@@ -18,6 +18,7 @@ const RepoChecker = () => {
   const [currentRepoUrl, setCurrentRepoUrl] = useState("");
   const [showSignUp, setShowSignUp] = useState(false);
   const [authenticating, setAuthenticating] = useState(false);
+  const [secretScanResults, setSecretScanResults] = useState<any>(null);
 
   const extractRepoInfo = (url: string) => {
     try {
@@ -36,6 +37,7 @@ const RepoChecker = () => {
     setRepoData(null);
     setNotFoundOrPrivate(false);
     setCurrentRepoUrl(repoUrl);
+    setSecretScanResults(null);
 
     try {
       const repoInfo = extractRepoInfo(repoUrl);
@@ -79,6 +81,30 @@ const RepoChecker = () => {
         license: data.license,
         size: data.size,
       });
+
+      // Run secret scanning
+      try {
+        const { data: scanResults, error: scanError } = await supabase.functions.invoke('scan-secrets', {
+          body: { repoUrl }
+        });
+
+        if (scanError) {
+          console.error('Error scanning for secrets:', scanError);
+          toast.error('Failed to scan repository for secrets');
+          return;
+        }
+
+        setSecretScanResults(scanResults);
+        
+        if (scanResults.results && scanResults.results.length > 0) {
+          toast.warning(`Found ${scanResults.results.length} potential secrets in the repository`);
+        } else {
+          toast.success('No secrets found in the repository');
+        }
+      } catch (error) {
+        console.error('Error during secret scan:', error);
+        toast.error('Failed to complete secret scan');
+      }
     } catch (error) {
       console.error("Error scanning repository:", error);
       toast.error("Failed to fetch repository data. Please try again later.");
@@ -264,6 +290,29 @@ const RepoChecker = () => {
           <div className="space-y-16">
             <div className="max-w-4xl mx-auto">
               <RepoStats repoData={repoData} />
+              
+              {/* Add secret scan results display */}
+              {secretScanResults && secretScanResults.results && secretScanResults.results.length > 0 && (
+                <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mt-4">
+                  <div className="flex items-center gap-2 text-red-400 mb-2">
+                    <AlertTriangle className="w-5 h-5" />
+                    <h3 className="font-semibold">Security Alert: Potential Secrets Found</h3>
+                  </div>
+                  <p className="text-gray-300 mb-4">
+                    We found {secretScanResults.results.length} potential secrets in your repository. 
+                    Please review and remove any hardcoded API keys, tokens, or other sensitive information.
+                  </p>
+                  <div className="space-y-2">
+                    {secretScanResults.results.map((result: any, index: number) => (
+                      <div key={index} className="bg-gray-800/50 p-3 rounded">
+                        <p className="text-sm text-gray-400">Found in: {result.file}</p>
+                        <p className="text-sm text-gray-400">Type: {result.ruleID}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {repoData.visibility === 'public' && (
                 <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mt-4">
                   <div className="flex items-center gap-2 text-yellow-400 mb-2">

@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Lock, AlertTriangle } from "lucide-react";
+import { Lock, AlertTriangle, Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LoadingSpinner from "./LoadingSpinner";
 import RepoStats from "./RepoStats";
@@ -17,6 +17,7 @@ const RepoChecker = () => {
   const [notFoundOrPrivate, setNotFoundOrPrivate] = useState(false);
   const [currentRepoUrl, setCurrentRepoUrl] = useState("");
   const [showSignUp, setShowSignUp] = useState(false);
+  const [authenticating, setAuthenticating] = useState(false);
 
   const extractRepoInfo = (url: string) => {
     try {
@@ -86,6 +87,62 @@ const RepoChecker = () => {
     }
   };
 
+  const handleGitHubAuth = async () => {
+    const clientId = "your-github-client-id"; // This will be provided by GitHub
+    const redirectUri = window.location.origin;
+    const scope = "repo"; // Read-only access to repositories
+    
+    // Store the current repo URL in localStorage to retrieve it after OAuth
+    if (currentRepoUrl) {
+      localStorage.setItem('pendingRepoUrl', currentRepoUrl);
+    }
+    
+    // Open GitHub OAuth popup
+    const width = 600;
+    const height = 700;
+    const left = window.screen.width / 2 - width / 2;
+    const top = window.screen.height / 2 - height / 2;
+    
+    const authWindow = window.open(
+      `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`,
+      'GitHub Authorization',
+      `width=${width},height=${height},top=${top},left=${left}`
+    );
+
+    // Handle the OAuth callback
+    window.addEventListener('message', async (event) => {
+      if (event.origin !== window.location.origin) return;
+      
+      if (event.data.type === 'github-oauth-code') {
+        try {
+          setAuthenticating(true);
+          const { data, error } = await supabase.functions.invoke('github-auth', {
+            body: { code: event.data.code }
+          });
+
+          if (error) throw error;
+
+          // Store the token securely (you might want to use a more secure storage method)
+          localStorage.setItem('github_token', data.access_token);
+          
+          // Re-scan the repository with the new token
+          const savedRepoUrl = localStorage.getItem('pendingRepoUrl');
+          if (savedRepoUrl) {
+            await handleSubmit(savedRepoUrl);
+            localStorage.removeItem('pendingRepoUrl');
+          }
+          
+          toast.success('Successfully authenticated with GitHub');
+        } catch (error) {
+          console.error('Error authenticating with GitHub:', error);
+          toast.error('Failed to authenticate with GitHub');
+        } finally {
+          setAuthenticating(false);
+        }
+      }
+    });
+  };
+
   const getAccessSettingsUrl = (repoUrl: string) => {
     const match = repoUrl.match(/github\.com\/([^\/]+)\/([^\/]+)/);
     if (!match) return '';
@@ -145,6 +202,22 @@ const RepoChecker = () => {
                 <ul className="list-disc ml-6 space-y-1">
                   <li>
                     Grant read-only access to <a href="https://github.com/check-my-git-hub" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Check-My-Git-Hub</a>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="ml-4"
+                      onClick={handleGitHubAuth}
+                      disabled={authenticating}
+                    >
+                      {authenticating ? (
+                        <LoadingSpinner className="w-4 h-4" />
+                      ) : (
+                        <>
+                          <Github className="w-4 h-4" />
+                          Grant Access
+                        </>
+                      )}
+                    </Button>
                     {currentRepoUrl && (
                       <ul className="list-disc ml-6 mt-1">
                         <li>

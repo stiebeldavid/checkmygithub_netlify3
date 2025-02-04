@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GitHub OAuth Callback</title>
+</head>
+<body>
+  <script>
+    // Get the authorization code from URL
+    const code = new URLSearchParams(window.location.search).get('code');
+    if (code) {
+      // Send the code to the parent window
+      window.opener.postMessage(
+        { type: 'github-oauth-code', code },
+        window.location.origin
+      );
+      window.close();
+    }
+  </script>
+</body>
+</html>

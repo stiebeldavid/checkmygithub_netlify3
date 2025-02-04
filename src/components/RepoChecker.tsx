@@ -88,59 +88,68 @@ const RepoChecker = () => {
   };
 
   const handleGitHubAuth = async () => {
-    const clientId = "your-github-client-id"; // This will be provided by GitHub
-    const redirectUri = window.location.origin;
-    const scope = "repo"; // Read-only access to repositories
-    
-    // Store the current repo URL in localStorage to retrieve it after OAuth
-    if (currentRepoUrl) {
-      localStorage.setItem('pendingRepoUrl', currentRepoUrl);
-    }
-    
-    // Open GitHub OAuth popup
-    const width = 600;
-    const height = 700;
-    const left = window.screen.width / 2 - width / 2;
-    const top = window.screen.height / 2 - height / 2;
-    
-    const authWindow = window.open(
-      `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`,
-      'GitHub Authorization',
-      `width=${width},height=${height},top=${top},left=${left}`
-    );
-
-    // Handle the OAuth callback
-    window.addEventListener('message', async (event) => {
-      if (event.origin !== window.location.origin) return;
+    try {
+      const { data: credentials, error: credentialsError } = await supabase.functions.invoke('get-github-secret');
       
-      if (event.data.type === 'github-oauth-code') {
-        try {
-          setAuthenticating(true);
-          const { data, error } = await supabase.functions.invoke('github-auth', {
-            body: { code: event.data.code }
-          });
-
-          if (error) throw error;
-
-          // Store the token securely (you might want to use a more secure storage method)
-          localStorage.setItem('github_token', data.access_token);
-          
-          // Re-scan the repository with the new token
-          const savedRepoUrl = localStorage.getItem('pendingRepoUrl');
-          if (savedRepoUrl) {
-            await handleSubmit(savedRepoUrl);
-            localStorage.removeItem('pendingRepoUrl');
-          }
-          
-          toast.success('Successfully authenticated with GitHub');
-        } catch (error) {
-          console.error('Error authenticating with GitHub:', error);
-          toast.error('Failed to authenticate with GitHub');
-        } finally {
-          setAuthenticating(false);
-        }
+      if (credentialsError || !credentials) {
+        console.error("Error fetching GitHub credentials:", credentialsError);
+        toast.error("Failed to authenticate with GitHub");
+        return;
       }
-    });
+
+      // Store the current repo URL in localStorage to retrieve it after OAuth
+      if (currentRepoUrl) {
+        localStorage.setItem('pendingRepoUrl', currentRepoUrl);
+      }
+      
+      // Open GitHub OAuth popup
+      const width = 600;
+      const height = 700;
+      const left = window.screen.width / 2 - width / 2;
+      const top = window.screen.height / 2 - height / 2;
+      
+      const authWindow = window.open(
+        `https://github.com/login/oauth/authorize?client_id=${credentials.clientId}&redirect_uri=${window.location.origin}&scope=repo`,
+        'GitHub Authorization',
+        `width=${width},height=${height},top=${top},left=${left}`
+      );
+
+      // Handle the OAuth callback
+      window.addEventListener('message', async (event) => {
+        if (event.origin !== window.location.origin) return;
+        
+        if (event.data.type === 'github-oauth-code') {
+          try {
+            setAuthenticating(true);
+            const { data, error } = await supabase.functions.invoke('github-auth', {
+              body: { code: event.data.code }
+            });
+
+            if (error) throw error;
+
+            // Store the token securely
+            localStorage.setItem('github_token', data.access_token);
+            
+            // Re-scan the repository with the new token
+            const savedRepoUrl = localStorage.getItem('pendingRepoUrl');
+            if (savedRepoUrl) {
+              await handleSubmit(savedRepoUrl);
+              localStorage.removeItem('pendingRepoUrl');
+            }
+            
+            toast.success('Successfully authenticated with GitHub');
+          } catch (error) {
+            console.error('Error authenticating with GitHub:', error);
+            toast.error('Failed to authenticate with GitHub');
+          } finally {
+            setAuthenticating(false);
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error initiating GitHub auth:', error);
+      toast.error('Failed to initiate GitHub authentication');
+    }
   };
 
   const getAccessSettingsUrl = (repoUrl: string) => {
@@ -213,25 +222,23 @@ const RepoChecker = () => {
                         <LoadingSpinner className="w-4 h-4" />
                       ) : (
                         <>
-                          <Github className="w-4 h-4" />
+                          <Github className="w-4 h-4 mr-2" />
                           Grant Access
                         </>
                       )}
                     </Button>
-                    {currentRepoUrl && (
-                      <ul className="list-disc ml-6 mt-1">
-                        <li>
-                          <a 
-                            href={getAccessSettingsUrl(currentRepoUrl)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:underline"
-                          >
-                            Click here to see your repo's access page
-                          </a>
-                        </li>
-                      </ul>
-                    )}
+                    <ul className="list-disc ml-6 mt-1">
+                      <li>
+                        <a 
+                          href={getAccessSettingsUrl(currentRepoUrl)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                        >
+                          Click here to see your repo's access page
+                        </a>
+                      </li>
+                    </ul>
                   </li>
                   <li>Make the repository public (not recommended)</li>
                 </ul>

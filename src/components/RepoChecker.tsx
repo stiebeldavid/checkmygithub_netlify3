@@ -118,9 +118,8 @@ const RepoChecker = () => {
         return;
       }
 
-      // Request minimal read-only access to repositories
-      // Removed public_repo scope and only requesting essential read permissions
-      const scope = `repo:status read:repo_hook`;
+      // Request read-only access to the specific repository
+      const scope = `read:org repo:status repo:read public_repo read:repo_hook`;
       
       const authWindow = window.open(
         `https://github.com/login/oauth/authorize?client_id=${credentials.clientId}&redirect_uri=${redirectUri}&scope=${scope}`,

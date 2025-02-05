@@ -350,16 +350,17 @@ const RepoChecker = () => {
               )}
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+            <div className="w-full">
               <Pricing />
             </div>
           </div>
         )}
       </div>
       <SignUpForm 
-        currentRepoUrl={currentRepoUrl} 
         open={showSignUp} 
-        onOpenChange={setShowSignUp}
+        onOpenChange={setShowSignUp} 
+        selectedOption={undefined}
+        currentRepoUrl={currentRepoUrl}
       />
     </div>
   );

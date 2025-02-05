@@ -3,6 +3,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
 // Secret detection patterns
@@ -36,11 +37,20 @@ const secretPatterns = [
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { 
+      status: 204,
+      headers: corsHeaders 
+    })
   }
 
   try {
+    // Only allow POST requests
+    if (req.method !== 'POST') {
+      throw new Error('Method not allowed')
+    }
+
     const { repoUrl } = await req.json()
+    console.log('Processing request for repo:', repoUrl)
     
     if (!repoUrl) {
       throw new Error('No repository URL provided')
@@ -57,15 +67,22 @@ serve(async (req) => {
 
     console.log(`Scanning repository: ${owner}/${repoName}`)
 
+    // Get GitHub token from request headers
+    const githubToken = req.headers.get('Authorization')?.split(' ')[1]
+    if (!githubToken) {
+      console.log('No GitHub token provided')
+    }
+
     // Fetch repository contents using GitHub API
     const response = await fetch(`https://api.github.com/repos/${owner}/${repoName}/git/trees/main?recursive=1`, {
       headers: {
         'Accept': 'application/vnd.github.v3+json',
-        'Authorization': `token ${req.headers.get('Authorization')?.split(' ')[1] || ''}`,
+        'Authorization': githubToken ? `token ${githubToken}` : '',
       },
     })
 
     if (!response.ok) {
+      console.error('GitHub API error:', response.status, await response.text())
       throw new Error(`GitHub API error: ${response.statusText}`)
     }
 
@@ -78,11 +95,13 @@ serve(async (req) => {
     // Scan each file
     for (const file of data.tree) {
       if (file.type === 'blob' && textFileExtensions.some(ext => file.path.toLowerCase().endsWith(ext))) {
+        console.log('Scanning file:', file.path)
+        
         // Fetch file content
         const contentResponse = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${file.path}`, {
           headers: {
             'Accept': 'application/vnd.github.v3+json',
-            'Authorization': `token ${req.headers.get('Authorization')?.split(' ')[1] || ''}`,
+            'Authorization': githubToken ? `token ${githubToken}` : '',
           },
         })
 
@@ -101,13 +120,18 @@ serve(async (req) => {
               })
             }
           }
+        } else {
+          console.error('Error fetching file content:', file.path, contentResponse.status)
         }
       }
     }
 
+    console.log('Scan completed. Found', results.length, 'potential secrets')
+
     return new Response(
       JSON.stringify({ results }),
       { 
+        status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       },
     )

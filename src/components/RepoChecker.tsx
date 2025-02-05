@@ -214,16 +214,20 @@ const RepoChecker = () => {
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="text-center mb-12">
           <div className="max-w-3xl mx-auto space-y-6">
-            <p className="text-2xl font-semibold text-gray-300 mb-4">
-              Protect your API keys and ensure your AI-generated code follows security best practices.
-            </p>
+            {!loading && !repoData && !notFoundOrPrivate && (
+              <p className="text-2xl font-semibold text-gray-300 mb-4">
+                Protect your API keys and ensure your AI-generated code follows security best practices.
+              </p>
+            )}
             <h1 className="text-5xl font-bold mb-6">
               Scan Your Repository
               <span className="text-primary"> for Free</span>
             </h1>
-            <p className="text-xl text-gray-300">
-              Built specifically for developers using AI tools like Lovable, Bolt, Create, v0, Replit, Cursor and more.
-            </p>
+            {!loading && !repoData && !notFoundOrPrivate && (
+              <p className="text-xl text-gray-300">
+                Built specifically for developers using AI tools like Lovable, Bolt, Create, v0, Replit, Cursor and more.
+              </p>
+            )}
           </div>
 
           <div className="max-w-2xl mx-auto mt-12 mb-16">

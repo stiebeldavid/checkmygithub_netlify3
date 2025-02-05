@@ -6,11 +6,11 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-// Secret detection patterns using proper JavaScript regex syntax
+// Secret detection patterns
 const secretPatterns = [
   {
     name: 'Generic API Key',
-    regex: /(api[_-]?key|apikey)(["\s]*[:=])(["\s]*)([a-z0-9]{32,45})/i,
+    regex: /api[_-]?key|apikey["\s]*[:=]["\s]*[a-z0-9]{32,45}/i,
   },
   {
     name: 'AWS Access Key',
@@ -22,7 +22,7 @@ const secretPatterns = [
   },
   {
     name: 'Generic Secret',
-    regex: /(secret|password|token)(["\s]*[:=])(["\s]*)([a-z0-9]{32,45})/i,
+    regex: /secret|password|token["\s]*[:=]["\s]*[a-z0-9]{32,45}/i,
   },
   {
     name: 'Private Key',
@@ -41,10 +41,7 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
       status: 204,
-      headers: {
-        ...corsHeaders,
-        'Access-Control-Max-Age': '86400',
-      }
+      headers: corsHeaders,
     })
   }
 
@@ -60,12 +57,18 @@ serve(async (req) => {
       )
     }
 
-    // Parse request body with error handling
+    // Parse request body with proper error handling
     let requestData;
     try {
-      const text = await req.text();
-      console.log('Request body:', text); // Log raw request body
-      requestData = JSON.parse(text);
+      const rawBody = await req.text();
+      console.log('Raw request body:', rawBody);
+      
+      if (!rawBody) {
+        throw new Error('Empty request body');
+      }
+      
+      requestData = JSON.parse(rawBody);
+      console.log('Parsed request data:', requestData);
     } catch (error) {
       console.error('Error parsing request body:', error);
       return new Response(

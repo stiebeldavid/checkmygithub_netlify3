@@ -351,7 +351,7 @@ const RepoChecker = () => {
             </div>
 
             <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-              <SecurityBestPractices />
+              <Pricing />
             </div>
           </div>
         )}

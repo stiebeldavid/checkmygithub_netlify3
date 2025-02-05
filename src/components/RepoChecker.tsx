@@ -8,6 +8,7 @@ import RepoForm from "./RepoForm";
 import SecurityBestPractices from "./SecurityBestPractices";
 import HowItWorks from "./HowItWorks";
 import Pricing from "./Pricing";
+import ScanningAnimation from "./ScanningAnimation";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -239,9 +240,8 @@ const RepoChecker = () => {
         </div>
 
         {loading && (
-          <div className="text-center py-12">
-            <LoadingSpinner />
-            <p className="mt-4 text-gray-400">Analyzing repository...</p>
+          <div className="text-center py-12 animate-fade-in">
+            <ScanningAnimation />
           </div>
         )}
 
@@ -301,7 +301,6 @@ const RepoChecker = () => {
             <div className="max-w-4xl mx-auto">
               <RepoStats repoData={repoData} />
               
-              {/* Add secret scan results display */}
               {secretScanResults && secretScanResults.results && secretScanResults.results.length > 0 && (
                 <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mt-4">
                   <div className="flex items-center gap-2 text-red-400 mb-2">

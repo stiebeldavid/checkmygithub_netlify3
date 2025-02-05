@@ -57,6 +57,24 @@ serve(async (req) => {
       )
     }
 
+    // Get GitHub credentials from environment variables
+    const githubClientId = Deno.env.get('GITHUB_CLIENT_ID');
+    const githubSecret = Deno.env.get('GITHUB_CLIENT_SECRET');
+
+    if (!githubClientId || !githubSecret) {
+      console.error('Missing GitHub credentials:', { 
+        hasClientId: !!githubClientId, 
+        hasSecret: !!githubSecret 
+      });
+      return new Response(
+        JSON.stringify({ error: 'GitHub credentials not configured' }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
     // Parse and validate request body
     let requestData;
     try {
@@ -95,16 +113,6 @@ serve(async (req) => {
     const { repoUrl } = requestData;
     console.log('Processing request for repo:', repoUrl);
 
-    if (!repoUrl) {
-      return new Response(
-        JSON.stringify({ error: 'No repository URL provided' }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
-    }
-
     // Extract owner and repo from URL
     const match = repoUrl.match(/github\.com\/([^\/]+)\/([^\/]+)/);
     if (!match) {
@@ -121,22 +129,7 @@ serve(async (req) => {
     const repoName = repo.replace(/\.git\/?$/, '');
     console.log(`Scanning repository: ${owner}/${repoName}`);
 
-    // Get GitHub credentials
-    const githubClientId = Deno.env.get('GITHUB_CLIENT_ID');
-    const githubSecret = Deno.env.get('GITHUB_CLIENT_SECRET');
-
-    if (!githubClientId || !githubSecret) {
-      console.error('GitHub credentials not configured');
-      return new Response(
-        JSON.stringify({ error: 'GitHub credentials not configured' }),
-        { 
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    // Create Basic Auth token
+    // Create Basic Auth token for GitHub API
     const authToken = btoa(`${githubClientId}:${githubSecret}`);
 
     // Fetch repository contents using GitHub API

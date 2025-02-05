@@ -20,6 +20,7 @@ const RepoChecker = () => {
   const [showSignUp, setShowSignUp] = useState(false);
   const [authenticating, setAuthenticating] = useState(false);
   const [secretScanResults, setSecretScanResults] = useState<any>(null);
+  const [selectedOption, setSelectedOption] = useState<string>();
 
   const extractRepoInfo = (url: string) => {
     try {
@@ -83,7 +84,6 @@ const RepoChecker = () => {
         size: data.size,
       });
 
-      // Run secret scanning with improved request body handling
       try {
         console.log('Starting secret scan for:', repoUrl);
         const requestBody = { repoUrl: repoUrl };
@@ -134,28 +134,23 @@ const RepoChecker = () => {
         return;
       }
 
-      // Store the current repo URL in localStorage to retrieve it after OAuth
       if (currentRepoUrl) {
         localStorage.setItem('pendingRepoUrl', currentRepoUrl);
       }
       
-      // Open GitHub OAuth popup
       const width = 600;
       const height = 700;
       const left = window.screen.width / 2 - width / 2;
       const top = window.screen.height / 2 - height / 2;
       
-      // Use the production redirect URI
       const redirectUri = 'https://checkmygithub.com/oauth-callback.html';
       
-      // Extract repo info to request specific repo access
       const repoInfo = extractRepoInfo(currentRepoUrl);
       if (!repoInfo) {
         toast.error("Could not parse repository URL. Please check the format.");
         return;
       }
 
-      // Request read-only access to the specific repository
       const scope = `read:org repo:status repo:read public_repo read:repo_hook`;
       
       const authWindow = window.open(
@@ -164,7 +159,6 @@ const RepoChecker = () => {
         `width=${width},height=${height},top=${top},left=${left}`
       );
 
-      // Handle the OAuth callback
       window.addEventListener('message', async (event) => {
         if (event.origin !== window.location.origin) return;
         
@@ -177,10 +171,8 @@ const RepoChecker = () => {
 
             if (error) throw error;
 
-            // Store the token securely
             localStorage.setItem('github_token', data.access_token);
             
-            // Re-scan the repository with the new token
             const savedRepoUrl = localStorage.getItem('pendingRepoUrl');
             if (savedRepoUrl) {
               await handleSubmit(savedRepoUrl);
@@ -207,6 +199,11 @@ const RepoChecker = () => {
     if (!match) return '';
     const [, owner, repo] = match;
     return `https://github.com/${owner}/${repo.replace(/\.git\/?$/, '')}/settings/access`;
+  };
+
+  const handleShowSignUp = (option: string) => {
+    setSelectedOption(option);
+    setShowSignUp(true);
   };
 
   return (
@@ -238,7 +235,7 @@ const RepoChecker = () => {
             <>
               <SecurityBestPractices />
               <HowItWorks />
-              <Pricing />
+              <Pricing onPlanSelect={handleShowSignUp} />
             </>
           )}
         </div>
@@ -338,7 +335,7 @@ const RepoChecker = () => {
                   <div className="mt-4 text-center px-4">
                     <Button
                       variant="outline"
-                      onClick={() => setShowSignUp(true)}
+                      onClick={() => handleShowSignUp('deeper-scan')}
                       className="text-primary hover:text-primary-foreground group whitespace-normal text-center w-full md:w-auto min-h-[auto] py-8"
                     >
                       <span className="flex items-center justify-center gap-2 flex-wrap px-2">
@@ -351,15 +348,15 @@ const RepoChecker = () => {
             </div>
 
             <div className="w-full">
-              <Pricing />
+              <Pricing onPlanSelect={handleShowSignUp} />
             </div>
           </div>
         )}
       </div>
       <SignUpForm 
         open={showSignUp} 
-        onOpenChange={setShowSignUp} 
-        selectedOption={undefined}
+        onOpenChange={setShowSignUp}
+        selectedOption={selectedOption}
         currentRepoUrl={currentRepoUrl}
       />
     </div>

@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-// Enhanced secret detection patterns including TruffleHog's common patterns
+// Secret detection patterns
 const secretPatterns = [
   {
     name: 'Generic API Key',
@@ -32,56 +32,12 @@ const secretPatterns = [
     name: 'RSA Private Key',
     regex: /-----BEGIN RSA PRIVATE KEY-----/,
   },
-  // Additional TruffleHog patterns
-  {
-    name: 'AWS Secret Key',
-    regex: /(?i)aws.{0,20}(?-i)['\"][0-9a-zA-Z\/+]{40}['\"]/, 
-  },
-  {
-    name: 'Google OAuth',
-    regex: /[0-9]+-[0-9A-Za-z_]{32}\.apps\.googleusercontent\.com/,
-  },
-  {
-    name: 'Slack Token',
-    regex: /xox[baprs]-([0-9a-zA-Z]{10,48})/,
-  },
-  {
-    name: 'Stripe API Key',
-    regex: /sk_live_[0-9a-zA-Z]{24}/,
-  },
-  {
-    name: 'Square Access Token',
-    regex: /sq0atp-[0-9A-Za-z\-_]{22}/,
-  },
-  {
-    name: 'Square OAuth Secret',
-    regex: /sq0csp-[0-9A-Za-z\-_]{43}/,
-  },
-  {
-    name: 'PayPal Braintree Access Token',
-    regex: /access_token\$production\$[0-9a-z]{16}\$[0-9a-f]{32}/,
-  },
-  {
-    name: 'Mailgun API Key',
-    regex: /key-[0-9a-zA-Z]{32}/,
-  },
-  {
-    name: 'Mailchimp API Key',
-    regex: /[0-9a-f]{32}-us[0-9]{1,2}/,
-  },
-  {
-    name: 'SSH Private Key',
-    regex: /-----BEGIN OPENSSH PRIVATE KEY-----/,
-  },
-  {
-    name: 'PGP Private Key',
-    regex: /-----BEGIN PGP PRIVATE KEY BLOCK-----/,
-  }
 ]
 
 serve(async (req) => {
   console.log('Received request:', req.method);
   
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
       status: 204,
@@ -90,6 +46,7 @@ serve(async (req) => {
   }
 
   try {
+    // Only allow POST requests
     if (req.method !== 'POST') {
       return new Response(
         JSON.stringify({ error: 'Method not allowed' }),
@@ -100,6 +57,7 @@ serve(async (req) => {
       )
     }
 
+    // Get GitHub credentials from environment variables
     const githubClientId = Deno.env.get('GITHUB_CLIENT_ID');
     const githubSecret = Deno.env.get('GITHUB_CLIENT_SECRET');
 
@@ -117,6 +75,7 @@ serve(async (req) => {
       );
     }
 
+    // Parse and validate request body
     let requestData;
     try {
       const contentType = req.headers.get('content-type');
@@ -154,6 +113,7 @@ serve(async (req) => {
     const { repoUrl } = requestData;
     console.log('Processing request for repo:', repoUrl);
 
+    // Extract owner and repo from URL
     const match = repoUrl.match(/github\.com\/([^\/]+)\/([^\/]+)/);
     if (!match) {
       return new Response(
@@ -169,8 +129,10 @@ serve(async (req) => {
     const repoName = repo.replace(/\.git\/?$/, '');
     console.log(`Scanning repository: ${owner}/${repoName}`);
 
+    // Create Basic Auth token for GitHub API
     const authToken = btoa(`${githubClientId}:${githubSecret}`);
 
+    // Fetch repository contents using GitHub API
     const response = await fetch(`https://api.github.com/repos/${owner}/${repoName}/git/trees/main?recursive=1`, {
       headers: {
         'Accept': 'application/vnd.github.v3+json',
@@ -198,11 +160,13 @@ serve(async (req) => {
     const results = [];
     const textFileExtensions = ['.js', '.ts', '.json', '.yml', '.yaml', '.env', '.txt', '.md', '.jsx', '.tsx'];
 
+    // Scan each file
     for (const file of data.tree) {
       if (file.type === 'blob' && textFileExtensions.some(ext => file.path.toLowerCase().endsWith(ext))) {
         console.log('Scanning file:', file.path);
         
         try {
+          // Fetch file content
           const contentResponse = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${file.path}`, {
             headers: {
               'Accept': 'application/vnd.github.v3+json',
@@ -215,6 +179,7 @@ serve(async (req) => {
             const contentData = await contentResponse.json();
             const content = atob(contentData.content);
 
+            // Check for secrets
             for (const pattern of secretPatterns) {
               const matches = content.match(pattern.regex);
               if (matches && matches.length > 0) {
@@ -222,9 +187,6 @@ serve(async (req) => {
                   file: file.path,
                   ruleID: pattern.name,
                   matches: matches.length,
-                  severity: pattern.name.includes('Private Key') || 
-                          pattern.name.includes('Secret Key') || 
-                          pattern.name.includes('Token') ? 'HIGH' : 'MEDIUM',
                 });
               }
             }
@@ -240,11 +202,7 @@ serve(async (req) => {
     console.log('Scan completed. Found', results.length, 'potential secrets');
 
     return new Response(
-      JSON.stringify({ 
-        results,
-        scanner: 'TruffleHog-compatible patterns',
-        scannedFiles: data.tree.filter(f => textFileExtensions.some(ext => f.path.toLowerCase().endsWith(ext))).length
-      }),
+      JSON.stringify({ results }),
       { 
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

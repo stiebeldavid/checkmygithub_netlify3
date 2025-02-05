@@ -6,31 +6,31 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-// Secret detection patterns
+// Secret detection patterns using proper JavaScript regex syntax
 const secretPatterns = [
   {
     name: 'Generic API Key',
-    regex: /(?i)(api[_-]?key|apikey)(["\s]*[:=])(["\s]*)([a-z0-9]{32,45})/g,
+    regex: /(api[_-]?key|apikey)(["\s]*[:=])(["\s]*)([a-z0-9]{32,45})/i,
   },
   {
     name: 'AWS Access Key',
-    regex: /AKIA[0-9A-Z]{16}/g,
+    regex: /AKIA[0-9A-Z]{16}/,
   },
   {
     name: 'GitHub Token',
-    regex: /gh[ps]_[0-9a-zA-Z]{36}/g,
+    regex: /gh[ps]_[0-9a-zA-Z]{36}/,
   },
   {
     name: 'Generic Secret',
-    regex: /(?i)(secret|password|token)(["\s]*[:=])(["\s]*)([a-z0-9]{32,45})/g,
+    regex: /(secret|password|token)(["\s]*[:=])(["\s]*)([a-z0-9]{32,45})/i,
   },
   {
     name: 'Private Key',
-    regex: /-----BEGIN PRIVATE KEY-----/g,
+    regex: /-----BEGIN PRIVATE KEY-----/,
   },
   {
     name: 'RSA Private Key',
-    regex: /-----BEGIN RSA PRIVATE KEY-----/g,
+    regex: /-----BEGIN RSA PRIVATE KEY-----/,
   },
 ]
 
@@ -141,8 +141,8 @@ serve(async (req) => {
 
           // Check for secrets
           for (const pattern of secretPatterns) {
-            const matches = [...content.matchAll(pattern.regex)]
-            if (matches.length > 0) {
+            const matches = content.match(pattern.regex)
+            if (matches && matches.length > 0) {
               results.push({
                 file: file.path,
                 ruleID: pattern.name,

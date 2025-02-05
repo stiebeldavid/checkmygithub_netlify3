@@ -82,14 +82,14 @@ const RepoChecker = () => {
         size: data.size,
       });
 
-      // Run secret scanning with better error handling and proper JSON formatting
+      // Run secret scanning with improved request body handling
       try {
         console.log('Starting secret scan for:', repoUrl);
+        const requestBody = { repoUrl: repoUrl };
+        console.log('Request body:', requestBody);
+        
         const { data: scanResults, error: scanError } = await supabase.functions.invoke('scan-secrets', {
-          body: JSON.stringify({ repoUrl }), // Properly stringify the JSON body
-          headers: {
-            'Content-Type': 'application/json',
-          }
+          body: requestBody,
         });
 
         if (scanError) {

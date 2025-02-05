@@ -35,7 +35,7 @@ const secretPatterns = [
 ]
 
 serve(async (req) => {
-  console.log('Received request:', req.method)
+  console.log('Received request:', req.method);
   
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -57,9 +57,14 @@ serve(async (req) => {
       )
     }
 
-    // Parse request body with proper error handling
+    // Parse and validate request body
     let requestData;
     try {
+      const contentType = req.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Content-Type must be application/json');
+      }
+
       const rawBody = await req.text();
       console.log('Raw request body:', rawBody);
       
@@ -69,11 +74,15 @@ serve(async (req) => {
       
       requestData = JSON.parse(rawBody);
       console.log('Parsed request data:', requestData);
+
+      if (!requestData.repoUrl) {
+        throw new Error('Missing repoUrl in request body');
+      }
     } catch (error) {
       console.error('Error parsing request body:', error);
       return new Response(
         JSON.stringify({ 
-          error: 'Invalid JSON in request body',
+          error: 'Invalid request body',
           details: error.message 
         }),
         { 
@@ -85,7 +94,7 @@ serve(async (req) => {
 
     const { repoUrl } = requestData;
     console.log('Processing request for repo:', repoUrl);
-    
+
     if (!repoUrl) {
       return new Response(
         JSON.stringify({ error: 'No repository URL provided' }),

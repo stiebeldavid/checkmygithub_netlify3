@@ -60,8 +60,28 @@ serve(async (req) => {
       )
     }
 
-    const { repoUrl } = await req.json()
-    console.log('Processing request for repo:', repoUrl)
+    // Parse request body with error handling
+    let requestData;
+    try {
+      const text = await req.text();
+      console.log('Request body:', text); // Log raw request body
+      requestData = JSON.parse(text);
+    } catch (error) {
+      console.error('Error parsing request body:', error);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid JSON in request body',
+          details: error.message 
+        }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    const { repoUrl } = requestData;
+    console.log('Processing request for repo:', repoUrl);
     
     if (!repoUrl) {
       return new Response(
@@ -74,7 +94,7 @@ serve(async (req) => {
     }
 
     // Extract owner and repo from URL
-    const match = repoUrl.match(/github\.com\/([^\/]+)\/([^\/]+)/)
+    const match = repoUrl.match(/github\.com\/([^\/]+)\/([^\/]+)/);
     if (!match) {
       return new Response(
         JSON.stringify({ error: 'Invalid GitHub repository URL' }),
@@ -85,13 +105,13 @@ serve(async (req) => {
       )
     }
 
-    const [, owner, repo] = match
-    const repoName = repo.replace(/\.git\/?$/, '')
-    console.log(`Scanning repository: ${owner}/${repoName}`)
+    const [, owner, repo] = match;
+    const repoName = repo.replace(/\.git\/?$/, '');
+    console.log(`Scanning repository: ${owner}/${repoName}`);
 
     // Get GitHub token from request headers
-    const githubToken = req.headers.get('Authorization')?.split(' ')[1]
-    console.log('GitHub token present:', !!githubToken)
+    const githubToken = req.headers.get('Authorization')?.split(' ')[1];
+    console.log('GitHub token present:', !!githubToken);
 
     // Fetch repository contents using GitHub API
     const response = await fetch(`https://api.github.com/repos/${owner}/${repoName}/git/trees/main?recursive=1`, {
@@ -100,11 +120,11 @@ serve(async (req) => {
         'Authorization': githubToken ? `token ${githubToken}` : '',
         'User-Agent': 'Supabase-Edge-Function',
       },
-    })
+    });
 
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error('GitHub API error:', response.status, errorText)
+      const errorText = await response.text();
+      console.error('GitHub API error:', response.status, errorText);
       return new Response(
         JSON.stringify({ 
           error: `GitHub API error: ${response.statusText}`,
@@ -114,49 +134,53 @@ serve(async (req) => {
           status: response.status,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
-      )
+      );
     }
 
-    const data = await response.json()
-    const results = []
-    const textFileExtensions = ['.js', '.ts', '.json', '.yml', '.yaml', '.env', '.txt', '.md', '.jsx', '.tsx']
+    const data = await response.json();
+    const results = [];
+    const textFileExtensions = ['.js', '.ts', '.json', '.yml', '.yaml', '.env', '.txt', '.md', '.jsx', '.tsx'];
 
     // Scan each file
     for (const file of data.tree) {
       if (file.type === 'blob' && textFileExtensions.some(ext => file.path.toLowerCase().endsWith(ext))) {
-        console.log('Scanning file:', file.path)
+        console.log('Scanning file:', file.path);
         
-        // Fetch file content
-        const contentResponse = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${file.path}`, {
-          headers: {
-            'Accept': 'application/vnd.github.v3+json',
-            'Authorization': githubToken ? `token ${githubToken}` : '',
-            'User-Agent': 'Supabase-Edge-Function',
-          },
-        })
+        try {
+          // Fetch file content
+          const contentResponse = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${file.path}`, {
+            headers: {
+              'Accept': 'application/vnd.github.v3+json',
+              'Authorization': githubToken ? `token ${githubToken}` : '',
+              'User-Agent': 'Supabase-Edge-Function',
+            },
+          });
 
-        if (contentResponse.ok) {
-          const contentData = await contentResponse.json()
-          const content = atob(contentData.content)
+          if (contentResponse.ok) {
+            const contentData = await contentResponse.json();
+            const content = atob(contentData.content);
 
-          // Check for secrets
-          for (const pattern of secretPatterns) {
-            const matches = content.match(pattern.regex)
-            if (matches && matches.length > 0) {
-              results.push({
-                file: file.path,
-                ruleID: pattern.name,
-                matches: matches.length,
-              })
+            // Check for secrets
+            for (const pattern of secretPatterns) {
+              const matches = content.match(pattern.regex);
+              if (matches && matches.length > 0) {
+                results.push({
+                  file: file.path,
+                  ruleID: pattern.name,
+                  matches: matches.length,
+                });
+              }
             }
+          } else {
+            console.error('Error fetching file content:', file.path, contentResponse.status);
           }
-        } else {
-          console.error('Error fetching file content:', file.path, contentResponse.status)
+        } catch (error) {
+          console.error('Error processing file:', file.path, error);
         }
       }
     }
 
-    console.log('Scan completed. Found', results.length, 'potential secrets')
+    console.log('Scan completed. Found', results.length, 'potential secrets');
 
     return new Response(
       JSON.stringify({ results }),
@@ -164,9 +188,9 @@ serve(async (req) => {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       },
-    )
+    );
   } catch (error) {
-    console.error('Error in scan-secrets function:', error)
+    console.error('Error in scan-secrets function:', error);
     return new Response(
       JSON.stringify({ 
         error: error.message,
@@ -176,6 +200,6 @@ serve(async (req) => {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       },
-    )
+    );
   }
 })

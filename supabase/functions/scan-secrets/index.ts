@@ -35,61 +35,90 @@ const secretPatterns = [
 ]
 
 serve(async (req) => {
+  console.log('Received request:', req.method)
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
       status: 204,
-      headers: corsHeaders 
+      headers: {
+        ...corsHeaders,
+        'Access-Control-Max-Age': '86400',
+      }
     })
   }
 
   try {
     // Only allow POST requests
     if (req.method !== 'POST') {
-      throw new Error('Method not allowed')
+      return new Response(
+        JSON.stringify({ error: 'Method not allowed' }),
+        { 
+          status: 405,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
     }
 
     const { repoUrl } = await req.json()
     console.log('Processing request for repo:', repoUrl)
     
     if (!repoUrl) {
-      throw new Error('No repository URL provided')
+      return new Response(
+        JSON.stringify({ error: 'No repository URL provided' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
     }
 
     // Extract owner and repo from URL
     const match = repoUrl.match(/github\.com\/([^\/]+)\/([^\/]+)/)
     if (!match) {
-      throw new Error('Invalid GitHub repository URL')
+      return new Response(
+        JSON.stringify({ error: 'Invalid GitHub repository URL' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
     }
 
     const [, owner, repo] = match
     const repoName = repo.replace(/\.git\/?$/, '')
-
     console.log(`Scanning repository: ${owner}/${repoName}`)
 
     // Get GitHub token from request headers
     const githubToken = req.headers.get('Authorization')?.split(' ')[1]
-    if (!githubToken) {
-      console.log('No GitHub token provided')
-    }
+    console.log('GitHub token present:', !!githubToken)
 
     // Fetch repository contents using GitHub API
     const response = await fetch(`https://api.github.com/repos/${owner}/${repoName}/git/trees/main?recursive=1`, {
       headers: {
         'Accept': 'application/vnd.github.v3+json',
         'Authorization': githubToken ? `token ${githubToken}` : '',
+        'User-Agent': 'Supabase-Edge-Function',
       },
     })
 
     if (!response.ok) {
-      console.error('GitHub API error:', response.status, await response.text())
-      throw new Error(`GitHub API error: ${response.statusText}`)
+      const errorText = await response.text()
+      console.error('GitHub API error:', response.status, errorText)
+      return new Response(
+        JSON.stringify({ 
+          error: `GitHub API error: ${response.statusText}`,
+          details: errorText
+        }),
+        { 
+          status: response.status,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
     }
 
     const data = await response.json()
     const results = []
-
-    // Only scan text-based files
     const textFileExtensions = ['.js', '.ts', '.json', '.yml', '.yaml', '.env', '.txt', '.md', '.jsx', '.tsx']
 
     // Scan each file
@@ -102,6 +131,7 @@ serve(async (req) => {
           headers: {
             'Accept': 'application/vnd.github.v3+json',
             'Authorization': githubToken ? `token ${githubToken}` : '',
+            'User-Agent': 'Supabase-Edge-Function',
           },
         })
 
@@ -136,9 +166,12 @@ serve(async (req) => {
       },
     )
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error in scan-secrets function:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        stack: error.stack 
+      }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

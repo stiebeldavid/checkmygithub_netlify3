@@ -82,15 +82,25 @@ const RepoChecker = () => {
         size: data.size,
       });
 
-      // Run secret scanning
+      // Run secret scanning with better error handling
       try {
+        console.log('Starting secret scan for:', repoUrl);
         const { data: scanResults, error: scanError } = await supabase.functions.invoke('scan-secrets', {
-          body: { repoUrl }
+          body: { repoUrl },
+          headers: {
+            'Content-Type': 'application/json',
+          }
         });
 
         if (scanError) {
           console.error('Error scanning for secrets:', scanError);
-          toast.error('Failed to scan repository for secrets');
+          toast.error('Failed to scan repository for secrets. Please try again.');
+          return;
+        }
+
+        if (!scanResults) {
+          console.error('No scan results returned');
+          toast.error('Failed to get scan results. Please try again.');
           return;
         }
 
@@ -103,7 +113,7 @@ const RepoChecker = () => {
         }
       } catch (error) {
         console.error('Error during secret scan:', error);
-        toast.error('Failed to complete secret scan');
+        toast.error('Failed to complete secret scan. Please try again.');
       }
     } catch (error) {
       console.error("Error scanning repository:", error);

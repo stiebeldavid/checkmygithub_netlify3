@@ -338,7 +338,7 @@ const RepoChecker = () => {
                       className="text-primary hover:text-primary-foreground group whitespace-normal text-center w-full md:w-auto min-h-[auto] py-8"
                     >
                       <span className="flex items-center justify-center gap-2 flex-wrap px-2">
-                        <span>Sign up to have CheckMyGitHub check your repo automatically</span>
+                        <span>Run a Deep Security Scan to find hidden vulnerabilities, dependency issues, and advanced security threats</span>
                       </span>
                     </Button>
                   </div>

@@ -3,13 +3,16 @@ import { CheckCircle } from "lucide-react";
 import { useState } from "react";
 import SignUpForm from "./SignUpForm";
 
-const Pricing = () => {
+interface PricingProps {
+  onPlanSelect: (option: string) => void;
+}
+
+const Pricing = ({ onPlanSelect }: PricingProps) => {
   const [showSignUp, setShowSignUp] = useState(false);
   const [selectedOption, setSelectedOption] = useState<string>("");
 
   const handleOptionClick = (option: string) => {
-    setSelectedOption(option);
-    setShowSignUp(true);
+    onPlanSelect(option);
   };
 
   return (
@@ -98,11 +101,6 @@ const Pricing = () => {
           </div>
         </div>
       </section>
-      <SignUpForm 
-        open={showSignUp} 
-        onOpenChange={setShowSignUp} 
-        selectedOption={selectedOption}
-      />
     </>
   );
 };

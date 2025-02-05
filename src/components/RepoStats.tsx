@@ -23,17 +23,17 @@ const RepoStats = ({ repoData }: RepoStatsProps) => {
 
   return (
     <div className="bg-white/5 backdrop-blur-lg rounded-lg p-4 shadow-xl border border-gray-800">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="flex items-center gap-2 flex-1">
-          <Shield className="w-5 h-5 text-primary" />
-          <h2 className="text-xl font-semibold">{repoData.name}</h2>
-          <span className={`px-2 py-0.5 rounded-full text-xs ${
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-2">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <Shield className="w-5 h-5 text-primary flex-shrink-0" />
+          <h2 className="text-xl font-semibold truncate">{repoData.name}</h2>
+          <span className={`px-2 py-0.5 rounded-full text-xs flex-shrink-0 ${
             repoData.visibility === 'public' ? 'bg-green-500/10 text-green-400' : 'bg-yellow-500/10 text-yellow-400'
           }`}>
             {repoData.visibility}
           </span>
         </div>
-        <div className="flex items-center gap-4 text-sm text-gray-400">
+        <div className="flex items-center gap-4 text-sm text-gray-400 flex-wrap">
           <div className="flex items-center gap-1">
             <span className="text-yellow-400">★</span>
             <span>{repoData.stars}</span>
@@ -52,26 +52,26 @@ const RepoStats = ({ repoData }: RepoStatsProps) => {
         </div>
       </div>
       
-      <p className="text-gray-400 text-sm mb-2">{repoData.description}</p>
+      <p className="text-gray-400 text-sm mb-2 break-words">{repoData.description}</p>
       
-      <div className="flex flex-wrap gap-4 text-sm">
+      <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
         {repoData.language && (
           <div className="flex items-center gap-2">
-            <Code className="w-4 h-4 text-primary" />
+            <Code className="w-4 h-4 text-primary flex-shrink-0" />
             <span className="text-gray-300">{repoData.language}</span>
           </div>
         )}
         
         {repoData.license && (
           <div className="flex items-center gap-2">
-            <Scale className="w-4 h-4 text-primary" />
+            <Scale className="w-4 h-4 text-primary flex-shrink-0" />
             <span className="text-gray-300">{repoData.license.name}</span>
           </div>
         )}
         
         {repoData.updated_at && (
           <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-primary" />
+            <Clock className="w-4 h-4 text-primary flex-shrink-0" />
             <span className="text-gray-300">
               Updated {formatDistanceToNow(new Date(repoData.updated_at))} ago
             </span>
@@ -80,7 +80,7 @@ const RepoStats = ({ repoData }: RepoStatsProps) => {
         
         {repoData.open_issues !== undefined && (
           <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-primary" />
+            <AlertCircle className="w-4 h-4 text-primary flex-shrink-0" />
             <span className="text-gray-300">{repoData.open_issues} open issues</span>
           </div>
         )}

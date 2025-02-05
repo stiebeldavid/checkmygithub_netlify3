@@ -1,4 +1,4 @@
-import { Shield, Lock, Search, CheckCircle2, XCircle } from "lucide-react";
+import { Shield, Lock, Search, CheckCircle2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useEffect, useState } from "react";
 
@@ -44,23 +44,25 @@ const ScanningAnimation = () => {
               }`}
             >
               <Step.icon
-                className={`w-full h-full ${
+                className={`w-full h-full animate-spin-slow ${
                   index === currentStep
-                    ? "animate-pulse text-primary"
+                    ? "text-primary animate-pulse"
                     : "text-gray-400"
                 }`}
               />
             </div>
           ))}
         </div>
-        <h3 className="text-xl font-semibold text-gray-200 min-h-[2rem] transition-all duration-300">
+        <h3 className="text-xl font-semibold text-gray-200 min-h-[2rem] transition-all duration-300 animate-pulse">
           {steps[currentStep]?.text}
         </h3>
       </div>
 
       <div className="space-y-2">
-        <Progress value={progress} className="h-2" />
-        <p className="text-sm text-gray-400 text-center">{progress}% Complete</p>
+        <Progress value={progress} className="h-2 animate-pulse" />
+        <p className="text-sm text-gray-400 text-center animate-pulse">
+          {progress}% Complete
+        </p>
       </div>
 
       <div className="grid grid-cols-4 gap-4">
@@ -68,7 +70,7 @@ const ScanningAnimation = () => {
           <div
             key={index}
             className={`h-1 rounded-full transition-all duration-300 ${
-              index <= currentStep ? "bg-primary" : "bg-gray-700"
+              index <= currentStep ? "bg-primary animate-pulse" : "bg-gray-700"
             }`}
           />
         ))}

@@ -121,15 +121,29 @@ serve(async (req) => {
     const repoName = repo.replace(/\.git\/?$/, '');
     console.log(`Scanning repository: ${owner}/${repoName}`);
 
-    // Get GitHub token from request headers
-    const githubToken = req.headers.get('Authorization')?.split(' ')[1];
-    console.log('GitHub token present:', !!githubToken);
+    // Get GitHub credentials
+    const githubClientId = Deno.env.get('GITHUB_CLIENT_ID');
+    const githubSecret = Deno.env.get('GITHUB_CLIENT_SECRET');
+
+    if (!githubClientId || !githubSecret) {
+      console.error('GitHub credentials not configured');
+      return new Response(
+        JSON.stringify({ error: 'GitHub credentials not configured' }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    // Create Basic Auth token
+    const authToken = btoa(`${githubClientId}:${githubSecret}`);
 
     // Fetch repository contents using GitHub API
     const response = await fetch(`https://api.github.com/repos/${owner}/${repoName}/git/trees/main?recursive=1`, {
       headers: {
         'Accept': 'application/vnd.github.v3+json',
-        'Authorization': githubToken ? `token ${githubToken}` : '',
+        'Authorization': `Basic ${authToken}`,
         'User-Agent': 'Supabase-Edge-Function',
       },
     });
@@ -163,7 +177,7 @@ serve(async (req) => {
           const contentResponse = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${file.path}`, {
             headers: {
               'Accept': 'application/vnd.github.v3+json',
-              'Authorization': githubToken ? `token ${githubToken}` : '',
+              'Authorization': `Basic ${authToken}`,
               'User-Agent': 'Supabase-Edge-Function',
             },
           });

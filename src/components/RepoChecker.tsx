@@ -253,6 +253,71 @@ const RepoChecker = ({ initialRepoUrl }: RepoCheckerProps) => {
             <RepoForm onSubmit={handleSubmit} loading={loading} initialValue={initialRepoUrl} />
           </div>
 
+          {repoData && (
+            <div className="space-y-16">
+              <div className="max-w-4xl mx-auto">
+                <RepoStats repoData={repoData} />
+              </div>
+            </div>
+          )}
+
+          {loading && (
+            <div className="text-center py-12 animate-fade-in">
+              <ScanningAnimation />
+            </div>
+          )}
+
+          {notFoundOrPrivate && (
+            <div className="max-w-2xl mx-auto mb-16">
+              <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700">
+                <div className="flex items-center gap-2 text-yellow-400 mb-4">
+                  <Lock className="w-6 h-6" />
+                  <h3 className="text-lg font-semibold">Repository Not Accessible</h3>
+                </div>
+                <p className="text-gray-300 mb-4">
+                  This repository either doesn't exist or is private. 
+                </p>
+                <div className="text-gray-400">
+                  <p className="mb-2">For a full security report, either:</p>
+                  <ul className="list-disc ml-6 space-y-1">
+                    <li>
+                      Grant read-only access to <a href="https://github.com/check-my-git-hub" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Check-My-Git-Hub</a>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="ml-4"
+                        onClick={handleGitHubAuth}
+                        disabled={authenticating}
+                      >
+                        {authenticating ? (
+                          <LoadingSpinner className="w-4 h-4" />
+                        ) : (
+                          <>
+                            <Github className="w-4 h-4 mr-2" />
+                            Grant Access
+                          </>
+                        )}
+                      </Button>
+                      <ul className="list-disc ml-6 mt-1">
+                        <li>
+                          <a 
+                            href={getAccessSettingsUrl(currentRepoUrl)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline"
+                          >
+                            Click here to see your repo's access page
+                          </a>
+                        </li>
+                      </ul>
+                    </li>
+                    <li>Make the repository public (not recommended)</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
           {!repoData && !loading && !notFoundOrPrivate && (
             <>
               <SecurityBestPractices />
@@ -262,116 +327,29 @@ const RepoChecker = ({ initialRepoUrl }: RepoCheckerProps) => {
           )}
         </div>
 
-        {loading && (
-          <div className="text-center py-12 animate-fade-in">
-            <ScanningAnimation />
-          </div>
-        )}
-
-        {notFoundOrPrivate && (
-          <div className="max-w-2xl mx-auto mb-16">
-            <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700">
-              <div className="flex items-center gap-2 text-yellow-400 mb-4">
-                <Lock className="w-6 h-6" />
-                <h3 className="text-lg font-semibold">Repository Not Accessible</h3>
-              </div>
-              <p className="text-gray-300 mb-4">
-                This repository either doesn't exist or is private. 
-              </p>
-              <div className="text-gray-400">
-                <p className="mb-2">For a full security report, either:</p>
-                <ul className="list-disc ml-6 space-y-1">
-                  <li>
-                    Grant read-only access to <a href="https://github.com/check-my-git-hub" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Check-My-Git-Hub</a>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="ml-4"
-                      onClick={handleGitHubAuth}
-                      disabled={authenticating}
-                    >
-                      {authenticating ? (
-                        <LoadingSpinner className="w-4 h-4" />
-                      ) : (
-                        <>
-                          <Github className="w-4 h-4 mr-2" />
-                          Grant Access
-                        </>
-                      )}
-                    </Button>
-                    <ul className="list-disc ml-6 mt-1">
-                      <li>
-                        <a 
-                          href={getAccessSettingsUrl(currentRepoUrl)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline"
-                        >
-                          Click here to see your repo's access page
-                        </a>
-                      </li>
-                    </ul>
-                  </li>
-                  <li>Make the repository public (not recommended)</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        )}
-
         {repoData && (
-          <div className="space-y-16">
-            <div className="max-w-4xl mx-auto">
-              <RepoStats repoData={repoData} />
-              
-              {secretScanResults && secretScanResults.results && secretScanResults.results.length > 0 && (
-                <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mt-4">
-                  <div className="flex items-center gap-2 text-red-400 mb-2">
-                    <AlertTriangle className="w-5 h-5" />
-                    <h3 className="font-semibold">Security Alert: Potential Secrets Found</h3>
-                  </div>
-                  <p className="text-gray-300 mb-4">
-                    We found {secretScanResults.results.length} potential secrets in your repository. 
-                    Please review and remove any hardcoded API keys, tokens, or other sensitive information.
-                  </p>
-                  <div className="space-y-2">
-                    {secretScanResults.results.map((result: any, index: number) => (
-                      <div key={index} className="bg-gray-800/50 p-3 rounded">
-                        <p className="text-sm text-gray-400">Found in: {result.file}</p>
-                        <p className="text-sm text-gray-400">Type: {result.ruleID}</p>
-                      </div>
-                    ))}
-                  </div>
+          <div className="w-full">
+            {secretScanResults && secretScanResults.results && secretScanResults.results.length > 0 && (
+              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mt-4">
+                <div className="flex items-center gap-2 text-red-400 mb-2">
+                  <AlertTriangle className="w-5 h-5" />
+                  <h3 className="font-semibold">Security Alert: Potential Secrets Found</h3>
                 </div>
-              )}
-
-              {repoData.visibility === 'public' && (
-                <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mt-4">
-                  <div className="flex items-center gap-2 text-yellow-400 mb-2">
-                    <AlertTriangle className="w-5 h-5" />
-                    <h3 className="font-semibold">Security Warning</h3>
-                  </div>
-                  <p className="text-gray-300">
-                    This repository is public, which means anyone can access your code. Make sure you haven't committed any sensitive information like API keys or credentials.
-                  </p>
-                  <div className="mt-4 text-center px-4">
-                    <Button
-                      variant="outline"
-                      onClick={() => handleShowSignUp('deeper-scan')}
-                      className="text-primary hover:text-primary-foreground group whitespace-normal text-center w-full md:w-auto min-h-[auto] py-8"
-                    >
-                      <span className="flex items-center justify-center gap-2 flex-wrap px-2">
-                        <span>Run Deeper Scan</span>
-                      </span>
-                    </Button>
-                  </div>
+                <p className="text-gray-300 mb-4">
+                  We found {secretScanResults.results.length} potential secrets in your repository. 
+                  Please review and remove any hardcoded API keys, tokens, or other sensitive information.
+                </p>
+                <div className="space-y-2">
+                  {secretScanResults.results.map((result: any, index: number) => (
+                    <div key={index} className="bg-gray-800/50 p-3 rounded">
+                      <p className="text-sm text-gray-400">Found in: {result.file}</p>
+                      <p className="text-sm text-gray-400">Type: {result.ruleID}</p>
+                    </div>
+                  ))}
                 </div>
-              )}
-            </div>
-
-            <div className="w-full">
-              <Pricing onPlanSelect={handleShowSignUp} />
-            </div>
+              </div>
+            )}
+            <Pricing onPlanSelect={handleShowSignUp} />
           </div>
         )}
       </div>

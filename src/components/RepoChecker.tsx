@@ -269,7 +269,7 @@ const RepoChecker = ({ initialRepoUrl }: RepoCheckerProps) => {
 
           {notFoundOrPrivate && (
             <div className="max-w-2xl mx-auto mb-16">
-              <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700">
+              <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700 text-left">
                 <div className="flex items-center gap-2 text-yellow-400 mb-4">
                   <Lock className="w-6 h-6" />
                   <h3 className="text-lg font-semibold">Repository Not Accessible</h3>

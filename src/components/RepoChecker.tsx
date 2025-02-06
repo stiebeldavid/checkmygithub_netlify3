@@ -330,7 +330,7 @@ const RepoChecker = ({ initialRepoUrl }: RepoCheckerProps) => {
         {repoData && (
           <div className="w-full">
             {secretScanResults && secretScanResults.results && secretScanResults.results.length > 0 && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mt-4">
+              <div className="max-w-4xl mx-auto bg-red-500/10 border border-red-500/20 rounded-lg p-4 mt-4">
                 <div className="flex items-center gap-2 text-red-400 mb-2">
                   <AlertTriangle className="w-5 h-5" />
                   <h3 className="font-semibold">Security Alert: Potential Secrets Found</h3>

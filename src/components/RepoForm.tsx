@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,10 +10,17 @@ import { supabase } from "@/integrations/supabase/client";
 interface RepoFormProps {
   onSubmit: (repoUrl: string) => void;
   loading: boolean;
+  initialValue?: string;
 }
 
-const RepoForm = ({ onSubmit, loading }: RepoFormProps) => {
-  const [repoUrl, setRepoUrl] = useState("");
+const RepoForm = ({ onSubmit, loading, initialValue }: RepoFormProps) => {
+  const [repoUrl, setRepoUrl] = useState(initialValue || "");
+
+  useEffect(() => {
+    if (initialValue) {
+      setRepoUrl(initialValue);
+    }
+  }, [initialValue]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

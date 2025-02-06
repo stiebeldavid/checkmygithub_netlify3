@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Lock, AlertTriangle, Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LoadingSpinner from "./LoadingSpinner";
@@ -12,11 +12,15 @@ import ScanningAnimation from "./ScanningAnimation";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
-const RepoChecker = () => {
+interface RepoCheckerProps {
+  initialRepoUrl?: string;
+}
+
+const RepoChecker = ({ initialRepoUrl }: RepoCheckerProps) => {
   const [loading, setLoading] = useState(false);
   const [repoData, setRepoData] = useState<any>(null);
   const [notFoundOrPrivate, setNotFoundOrPrivate] = useState(false);
-  const [currentRepoUrl, setCurrentRepoUrl] = useState("");
+  const [currentRepoUrl, setCurrentRepoUrl] = useState(initialRepoUrl || "");
   const [showSignUp, setShowSignUp] = useState(false);
   const [authenticating, setAuthenticating] = useState(false);
   const [secretScanResults, setSecretScanResults] = useState<any>(null);
@@ -124,6 +128,24 @@ const RepoChecker = () => {
     }
   };
 
+  // Add event listener for auto-scan
+  useEffect(() => {
+    const handleAutoScan = (event: CustomEvent<{ repoUrl: string }>) => {
+      handleSubmit(event.detail.repoUrl);
+    };
+
+    window.addEventListener('auto-scan', handleAutoScan as EventListener);
+    
+    // If initialRepoUrl is provided, trigger scan automatically
+    if (initialRepoUrl) {
+      handleSubmit(initialRepoUrl);
+    }
+
+    return () => {
+      window.removeEventListener('auto-scan', handleAutoScan as EventListener);
+    };
+  }, []);
+
   const handleGitHubAuth = async () => {
     try {
       const { data: credentials, error: credentialsError } = await supabase.functions.invoke('get-github-secret');
@@ -228,7 +250,7 @@ const RepoChecker = () => {
           </div>
 
           <div className="max-w-2xl mx-auto mt-12 mb-16">
-            <RepoForm onSubmit={handleSubmit} loading={loading} />
+            <RepoForm onSubmit={handleSubmit} loading={loading} initialValue={initialRepoUrl} />
           </div>
 
           {!repoData && !loading && !notFoundOrPrivate && (

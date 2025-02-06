@@ -277,41 +277,53 @@ const RepoChecker = ({ initialRepoUrl }: RepoCheckerProps) => {
                 <p className="text-gray-300 mb-4">
                   This repository either doesn't exist or is private. 
                 </p>
-                <div className="text-gray-400">
-                  <p className="mb-2">For a full security report, either:</p>
-                  <ul className="list-disc ml-6 space-y-1">
-                    <li>
-                      Grant read-only access to <a href="https://github.com/check-my-git-hub" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Check-My-Git-Hub</a>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="ml-4"
-                        onClick={handleGitHubAuth}
-                        disabled={authenticating}
-                      >
-                        {authenticating ? (
-                          <LoadingSpinner className="w-4 h-4" />
-                        ) : (
-                          <>
-                            <Github className="w-4 h-4 mr-2" />
-                            Grant Access
-                          </>
-                        )}
-                      </Button>
-                      <ul className="list-disc ml-6 mt-1">
-                        <li>
+                <div className="space-y-4">
+                  <p className="text-gray-400 font-medium">For a full security report, either:</p>
+                  <ul className="list-none space-y-4">
+                    <li className="flex items-start gap-4">
+                      <div className="rounded-full w-2 h-2 bg-gray-400 mt-2"></div>
+                      <div className="flex-1">
+                        <span className="text-gray-300">Grant read-only access to </span>
+                        <a 
+                          href="https://github.com/check-my-git-hub" 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-primary hover:underline"
+                        >
+                          Check-My-Git-Hub
+                        </a>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="ml-4"
+                          onClick={handleGitHubAuth}
+                          disabled={authenticating}
+                        >
+                          {authenticating ? (
+                            <LoadingSpinner className="w-4 h-4" />
+                          ) : (
+                            <>
+                              <Github className="w-4 h-4 mr-2" />
+                              Grant Access
+                            </>
+                          )}
+                        </Button>
+                        <div className="mt-2">
                           <a 
                             href={getAccessSettingsUrl(currentRepoUrl)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-primary hover:underline"
+                            className="text-primary hover:underline text-sm"
                           >
                             Click here to see your repo's access page
                           </a>
-                        </li>
-                      </ul>
+                        </div>
+                      </div>
                     </li>
-                    <li>Make the repository public (not recommended)</li>
+                    <li className="flex items-start gap-4">
+                      <div className="rounded-full w-2 h-2 bg-gray-400 mt-2"></div>
+                      <span className="text-gray-300">Make the repository public (not recommended)</span>
+                    </li>
                   </ul>
                 </div>
               </div>

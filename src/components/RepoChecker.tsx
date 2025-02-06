@@ -293,9 +293,9 @@ const RepoChecker = ({ initialRepoUrl }: RepoCheckerProps) => {
                           Check-My-Git-Hub
                         </a>
                         <Button
-                          variant="outline"
+                          variant="default"
                           size="sm"
-                          className="ml-4"
+                          className="ml-4 bg-primary hover:bg-primary/90 text-white font-medium transition-colors"
                           onClick={handleGitHubAuth}
                           disabled={authenticating}
                         >
